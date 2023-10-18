@@ -5,7 +5,8 @@ class Player(pygame.sprite.Sprite):
     GRAVITY = 1
     SPEED = 5
     FPS = 60
-    FRICTION_FORCE = 0.2
+    FRICTION_FORCE = 0.5
+    ATTACK_RANGE = 32
     def __init__(self, x, y, width, height):
         super().__init__()
         self.image = pygame.image.load(os.path.join('Assets\Player', 'Jump.png'))
@@ -14,41 +15,58 @@ class Player(pygame.sprite.Sprite):
         self.velocity = pygame.math.Vector2(0, 0)
         self.fall_count = 0 # virtual gravity
 
-        
-        self.mask = None
+        self.isFacingRight = True
         self.isJump = True
+        self.mask = None
         
-        # self.tag = tag
-        # self.hp = 
-        # self.attack_cd = 0
-        # self.attack_time = 0
+        
+        # Cooldown & Timer
+        self.dash_cd_timer = 0
+        self.dash_cd = 1
+        
         # self.dash_cd = 0
         # self.pull_cd = 0
         # self.push_cd = 0
     def update(self, keys, objects):
-        self.updateInput(keys)
-        self.updateGravity()
+        self.update_input(keys)
+        self.update_gravity()
         self.move()
         self.mask = pygame.mask.from_surface(self.image)
         self.vertical_collision(objects, self.velocity.y)
+        
+        self.update_cd_timer()
     
     def draw(self, screen):
-        pygame.draw.rect(screen, (255, 0, 0), self.rect)
+        pygame.draw.rect(self.scene, (255, 0, 0), self.rect)
         
     def move(self):
         self.rect.x += self.velocity.x
         self.rect.y += self.velocity.y
+    
+    def flip(self):
+        self.image = pygame.transform.flip(self.image, True, False)
+        self.isFacingRight = not self.isFacingRight
 
-    def updateInput(self, input_keys):
+    def update_input(self, input_keys):
         # horizontal move
         if input_keys[pygame.K_a] or input_keys[pygame.K_LEFT]:
-            self.velocity.x = -self.SPEED
+            if self.isFacingRight:
+                self.flip()
+            if self.velocity.x < -self.SPEED:
+                self.velocity.x += self.FRICTION_FORCE
+            else:
+                self.velocity.x = -self.SPEED
         elif input_keys[pygame.K_d] or input_keys[pygame.K_RIGHT]:
-            self.velocity.x = self.SPEED
-        else:
-            if self.velocity.x > 0.1:
+            if not self.isFacingRight:
+                self.flip()
+            if self.velocity.x > self.SPEED:
                 self.velocity.x -= self.FRICTION_FORCE
-            elif self.velocity.x < -0.1:
+            else:
+                self.velocity.x = self.SPEED
+        else:
+            if self.velocity.x > 0.1 or self.velocity.x > self.SPEED:
+                self.velocity.x -= self.FRICTION_FORCE
+            elif self.velocity.x < -0.1 or self.velocity.x < -self.SPEED:
                 self.velocity.x += self.FRICTION_FORCE
             else:
                 self.velocity.x = 0
@@ -58,17 +76,22 @@ class Player(pygame.sprite.Sprite):
             self.velocity.y = -5
             self.isJump = True
         # attack
-        elif input_keys[pygame.K_j] or input_keys[pygame.MOUSEBUTTONDOWN]:
+        elif input_keys[pygame.K_j]:
             pass
         # dash
         elif input_keys[pygame.K_k] or input_keys[pygame.K_LSHIFT] or input_keys[pygame.K_LCTRL]:
-            self.velocity.x *= 3
+            if self.dash_cd_timer <= 0:
+                self.velocity.x *= 3
+                self.dash_cd_timer = self.dash_cd
         # pull_skill
         elif input_keys[pygame.K_e]:
-            pass
+            self.attack()
+    
+    def update_cd_timer(self):
+        self.dash_cd_timer -= 1 / self.FPS
     
     ############## Physics & Collision ##############
-    def updateGravity(self):
+    def update_gravity(self):
         if self.isJump == True:            
             self.velocity.y += min(1, (self.fall_count / self.FPS) * self.GRAVITY)
             self.fall_count += 1
@@ -98,6 +121,8 @@ class Player(pygame.sprite.Sprite):
             collide_objects.append(obj)
         return collide_objects
     
+    def attack(self):
+        pass
     ############## Getters & Setters ##############
     def set_hp(self, hp):
         self.hp = hp     
@@ -107,5 +132,5 @@ class Player(pygame.sprite.Sprite):
         
     def get_tag(self):
         return self.tag
-    
+
 # Ref https://github.com/techwithtim/Python-Platformer/
