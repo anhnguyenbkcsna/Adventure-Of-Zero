@@ -37,7 +37,7 @@ class Player(pygame.sprite.Sprite):
         self.update_cd_timer()
     
     def draw(self, screen):
-        pygame.draw.rect(self.scene, (255, 0, 0), self.rect)
+        pygame.draw.rect(screen, (255, 0, 0), self.rect)
         
     def move(self):
         self.rect.x += self.velocity.x
