@@ -7,6 +7,8 @@ class Player(pygame.sprite.Sprite):
     FPS = 60
     FRICTION_FORCE = 0.5
     ATTACK_RANGE = 32
+    WIDTH = 30
+    HEIGHT = 50
     def __init__(self, x, y, width, height):
         super().__init__()
         self.image = pygame.image.load(os.path.join('Assets\Player', 'Jump.png'))
