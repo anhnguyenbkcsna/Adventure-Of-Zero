@@ -48,7 +48,6 @@ class CannonBall(pygame.sprite.Sprite):
     
     def update(self, player):     
         # Player die if touch ball (thay kill bang ham chuyen trang thai player die)
-        print(self.collide_player(player))
         if self.collide_player(player):
             player.kill()
         
