@@ -91,7 +91,7 @@ class Enemy(pygame.sprite.Sprite):
         self.move()
         
         # Player in attack range
-        if player.state != self.DEAD_STATE:
+        if self.state != self.DEAD_STATE:
             if self.rayCast2d.collide_player(player):
                 if self.state != self.ATTACK_STATE: self.attack()
             else:

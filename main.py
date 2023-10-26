@@ -70,7 +70,7 @@ class PlayScene(Scene):
         super().__init__()
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 30, 50)
         
-        enemy = Enemy(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE - Enemy.HEIGHT + Enemy.FOOT_SPACE, BLOCK_SIZE, (SCREEN_WIDTH // (BLOCK_SIZE * 2) - 1) * BLOCK_SIZE)
+        enemy = Enemy(BLOCK_SIZE*2, SCREEN_HEIGHT - BLOCK_SIZE - Enemy.HEIGHT + Enemy.FOOT_SPACE, BLOCK_SIZE*2, (SCREEN_WIDTH // (BLOCK_SIZE * 2) - 1) * BLOCK_SIZE)
         self.enemyGroup = pygame.sprite.Group()
         self.enemyGroup.add(enemy)
         
