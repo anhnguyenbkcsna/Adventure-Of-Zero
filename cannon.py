@@ -5,11 +5,84 @@ class AnimInfo():
    def __init__(self, startFrame, numFrames):
        self.startFrame = startFrame
        self.numFrames = numFrames 
-                 
+  
+class CannonBall(pygame.sprite.Sprite):
+    
+    YTOCANNONY = 8 # sPACE BETWEEN y of cannon ball to y of cannon
+    XTOCANNONX = -16 # sPACE BETWEEN y of cannon ball to y of cannon
+    SPEED = 4
+    FRAME_RATE_CHANGE_ANIM = 10
+    WIDTH = 32
+    HEIGHT = 32
+    FOOT_SPACE = 0 # Space between foot and ground according to image size 
+    ALIVE_STATE = 0
+    EXPLODE_STATE = 1  
+    
+    def __init__(self, x, y, isFacingRight):
+        super().__init__()
+        
+        self.sprites = []
+        self.sprites.append(pygame.image.load(os.path.join('Assets\Cannon', 'Cannon Ball Idle/1.png')))
+        self.sprites.append(pygame.image.load(os.path.join('Assets\Cannon', 'Cannon Ball Explosion/1.png')))
+        self.sprites.append(pygame.image.load(os.path.join('Assets\Cannon', 'Cannon Ball Explosion/2.png')))
+        self.sprites.append(pygame.image.load(os.path.join('Assets\Cannon', 'Cannon Ball Explosion/3.png')))
+        self.sprites.append(pygame.image.load(os.path.join('Assets\Cannon', 'Cannon Ball Explosion/4.png')))
+        self.sprites.append(pygame.image.load(os.path.join('Assets\Cannon', 'Cannon Ball Explosion/5.png')))
+        self.sprites.append(pygame.image.load(os.path.join('Assets\Cannon', 'Cannon Ball Explosion/6.png')))
+        self.sprites.append(pygame.image.load(os.path.join('Assets\Cannon', 'Cannon Ball Explosion/7.png')))       
+        for i in range(len(self.sprites)):
+            self.sprites[i] = pygame.transform.scale(self.sprites[i],(self.WIDTH, self.HEIGHT))
+            if isFacingRight: 
+                self.sprites[i] = pygame.transform.flip(self.sprites[i], True, False)
+        
+        self.animInfo = [AnimInfo(0, 1), AnimInfo(1, 7)]
+        self.frameCount = 0 
+        
+        self.image = self.sprites[0]
+        
+        self.rect = pygame.Rect(x, y, self.WIDTH, self.HEIGHT)
+
+        self.moveDistance = 0
+        self.velocityX = self.SPEED if isFacingRight else -self.SPEED
+        self.state = self.ALIVE_STATE
+    
+    def update(self, player):     
+        # Player die if touch ball (thay kill bang ham chuyen trang thai player die)
+        print(self.collide_player(player))
+        if self.collide_player(player):
+            player.kill()
+        
+        # Move cannon ball a distance == Cannon.SHOOTING_RANGE
+        if self.state == self.ALIVE_STATE:
+            self.move()
+        
+        # Animation
+        if self.frameCount % 10 == 0:
+            self.image = self.sprites[self.animInfo[self.state].startFrame + self.frameCount//10]
+        self.frameCount += 1
+        if self.frameCount > (self.animInfo[self.state].numFrames - 1)*10:
+            if self.state == self.EXPLODE_STATE: 
+                self.kill()
+            else:
+                self.frameCount = 0
+                
+    def move(self):
+        self.rect.x += self.velocityX
+        self.moveDistance += self.velocityX
+        if self.moveDistance*self.moveDistance == Cannon.SHOOTING_RANGE*Cannon.SHOOTING_RANGE:
+            self.explode()
+    
+    def explode(self):
+        self.state = self.EXPLODE_STATE
+        self.frameCount = 0
+        
+    def collide_player(self, player):
+        return pygame.sprite.collide_rect(self, player)
+           
 class Cannon(pygame.sprite.Sprite):   
     
     SHOOTING_FRAME_RATE = 120
-    CANNON_BALL_FLY_RANGE = 400
+    SHOOTING_RANGE = 400
     FRAME_RATE_CHANGE_ANIM = 10
     WIDTH = 80
     HEIGHT = 52
@@ -48,10 +121,10 @@ class Cannon(pygame.sprite.Sprite):
         self.frameCountShooting = 0
         self.isFacingRight = isFacingRight
         self.state = self.SHOOTING_STATE
+        self.cannonBallGroup = pygame.sprite.Group()
 
-    def update(self, keys):
-        self.update_input(keys)
-        
+    def update(self):
+            
         # Auto shoot every SHOOTING_FRAME_RATE
         if self.state != self.DEAD_STATE:
             if self.frameCountShooting == 0:
@@ -63,20 +136,15 @@ class Cannon(pygame.sprite.Sprite):
         # Animation
         if self.frameCount % 10 == 0:
             self.image = self.sprites[self.animInfo[self.state].startFrame + self.frameCount//10]
-            if not self.isFacingRight:
-                self.image = pygame.transform.flip(self.image, True, False)
         self.frameCount += 1
         if self.frameCount > (self.animInfo[self.state].numFrames - 1)*10:
             if self.state == self.DEAD_STATE: 
                 self.kill()
             if self.state == self.SHOOTING_STATE:
+                self.cannonBallGroup.add(CannonBall(self.rect.x + self.WIDTH + CannonBall.XTOCANNONX if self.isFacingRight else self.rect.x + CannonBall.XTOCANNONX, self.rect.y + CannonBall.YTOCANNONY, self.isFacingRight))
                 self.stand() 
             else:
                 self.frameCount = 0
-    
-    def update_input(self, input_keys):
-        if input_keys[pygame.K_k]:
-            self.dead()
     
     def dead(self):
         self.state = self.DEAD_STATE

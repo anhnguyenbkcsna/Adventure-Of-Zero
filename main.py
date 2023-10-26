@@ -70,12 +70,16 @@ class PlayScene(Scene):
         super().__init__()
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 30, 50)
         
-        enemy = Enemy(BLOCK_SIZE*2, SCREEN_HEIGHT - BLOCK_SIZE - Enemy.HEIGHT + Enemy.FOOT_SPACE, BLOCK_SIZE*2, (SCREEN_WIDTH // (BLOCK_SIZE * 2) - 1) * BLOCK_SIZE)
+        # Enemy
         self.enemyGroup = pygame.sprite.Group()
+        enemy = Enemy(BLOCK_SIZE*3, SCREEN_HEIGHT - BLOCK_SIZE - Enemy.HEIGHT + Enemy.FOOT_SPACE, BLOCK_SIZE*2, (SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE)
         self.enemyGroup.add(enemy)
         
-        cannon = Cannon(0, SCREEN_HEIGHT - 2 * BLOCK_SIZE - Cannon.HEIGHT + Cannon.FOOT_SPACE, True)
+        # Cannon
         self.cannonGroup = pygame.sprite.Group()
+        cannon = Cannon(0, SCREEN_HEIGHT - 2 * BLOCK_SIZE - Cannon.HEIGHT + Cannon.FOOT_SPACE, True)
+        self.cannonGroup.add(cannon)
+        cannon = Cannon((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2 * BLOCK_SIZE - Cannon.HEIGHT + Cannon.FOOT_SPACE, False)
         self.cannonGroup.add(cannon)
         
         # generate ground
@@ -85,6 +89,7 @@ class PlayScene(Scene):
         self.blocks.append(Block(0, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
         self.blocks.append(Block(BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
         self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 1) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
+        self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
             
     def next_scene(self):
         return EndScene()
@@ -92,7 +97,9 @@ class PlayScene(Scene):
     def update(self, inputs):
         self.player.update(inputs, self.blocks)
         self.enemyGroup.update(self.player)
-        self.cannonGroup.update(inputs)
+        self.cannonGroup.update()
+        for cannon in self.cannonGroup.sprites():
+            cannon.cannonBallGroup.update(self.player)
     
     def render(self):
         screen.fill((255, 255, 255))
@@ -103,6 +110,8 @@ class PlayScene(Scene):
         self.player.draw(screen)
         self.enemyGroup.draw(screen)
         self.cannonGroup.draw(screen)
+        for cannon in self.cannonGroup.sprites():
+            cannon.cannonBallGroup.draw(screen)
 
         scene_name = FONT.render('Play Scene', True, (0, 0, 0))
         screen.blit(scene_name, SCENE_NAME_AREA)
