@@ -17,7 +17,7 @@ class Object(pygame.sprite.Sprite):
         self.rect.x -= player_velocity_x
         
     def get_tag(self):
-        pass
+        return self.name
 
 class Block(Object):
     def __init__(self, x, y, size):
@@ -25,7 +25,4 @@ class Block(Object):
         self.image.fill((0, 100, 50))
         self.name = 'block'
         self.mask = pygame.mask.from_surface(self.image)
-        self.tag = 'Block'
     
-    def get_tag(self):
-        return self.tag

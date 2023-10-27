@@ -6,7 +6,6 @@ class Player(pygame.sprite.Sprite):
     SPEED = 5
     FPS = 60
     FRICTION_FORCE = 1
-    ATTACK_RANGE = 64
     def __init__(self, x, y, width, height):
         super().__init__()
         self.image = pygame.image.load(os.path.join('Assets\Player', 'Jump.png'))
@@ -31,6 +30,7 @@ class Player(pygame.sprite.Sprite):
         # self.dash_cd = 0
         # self.pull_cd = 0
         # self.push_cd = 0
+        self.attack = Attack()
     def update(self, keys, objects):
         self.update_input(keys)
         self.update_gravity()
@@ -39,7 +39,9 @@ class Player(pygame.sprite.Sprite):
         self.vertical_collision(objects, self.velocity.y)
         
         self.update_cd_timer()
-    
+        
+        self.attack.collision(objects)
+        
     def draw(self, screen):
         pygame.draw.rect(screen, (255, 0, 0), self.rect)
         if self.attack_cd_timer > 0:
@@ -48,7 +50,9 @@ class Player(pygame.sprite.Sprite):
                 pos = (self.rect.x + 3 * self.rect.width / 2, self.rect.y + self.rect.height / 2)
             else:
                 pos = (self.rect.x - self.rect.width / 2, self.rect.y + self.rect.height / 2)
-            pygame.draw.circle(screen, (255, 100, 0), pos, int(self.ATTACK_RANGE / 2))
+            # draw attack range
+            self.attack.draw(screen, pos)
+            # pygame.draw.circle(screen, (255, 100, 0), pos, int(self.ATTACK_RANGE / 2))
         
     def move(self):
         # self.rect.x += self.velocity.x
@@ -130,7 +134,7 @@ class Player(pygame.sprite.Sprite):
                     self.rect.top = obj.rect.bottom
                     self.hit_head()
                     
-            collide_objects.append(obj)
+                collide_objects.append(obj)
         return collide_objects
     
     def attack(self):
@@ -149,20 +153,21 @@ class Player(pygame.sprite.Sprite):
         return self.rect
 # Ref https://github.com/techwithtim/Python-Platformer/
 
-class Attack:
-    def __init__(self, x, y):
-        super.__init__()
+class Attack(pygame.sprite.Sprite):
+    ATTACK_RANGE = 32
+    def __init__(self):
+        super().__init__()
         self.image = pygame.image.load(os.path.join('Assets\Player', 'Jump.png'))
-        self.x = x
-        self.y = y
-        self.mask = None
+        self.rect = pygame.Rect(0, 0, self.ATTACK_RANGE, self.ATTACK_RANGE)
+        self.mask = pygame.mask.from_surface(self.image)
 
     def collision(self, objects):
         collide_objects = []
         for obj in objects:
             if pygame.sprite.collide_mask(self, obj):
+                print("Collision detect: Attack + " +obj.get_tag())
                 collide_objects.append(obj)
-        
-        for obj in collide_objects:
-            if obj.get_tag() != "Player":
-                print(obj)
+    
+    def draw(self, screen, pos):
+        self.rect = pygame.Rect(pos[0] - self.ATTACK_RANGE / 2, pos[1] - self.ATTACK_RANGE / 2, self.ATTACK_RANGE, self.ATTACK_RANGE)
+        pygame.draw.rect(screen, (150, 150, 40), self.rect)    

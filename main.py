@@ -72,6 +72,7 @@ class PlayScene(Scene):
         self.blocks = []
         for i in range(SCREEN_WIDTH // (BLOCK_SIZE * 2)):
             self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE))
+        self.blocks.append(Block(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE - BLOCK_SIZE, BLOCK_SIZE))
             
     def next_scene(self):
         return EndScene()
