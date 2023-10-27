@@ -76,20 +76,26 @@ class PlayScene(Scene):
     def next_scene(self):
         return EndScene()
 
-    def update(self, inputs):
+    def update(self, inputs):        
         self.player.update(inputs, self.blocks)
+        
+        # Update camera
+        for block in self.blocks:
+            block.update_camera(self.player.velocity.x)
     
     def render(self):
         screen.fill((255, 255, 255))
+        
         # Draw the blocks
         for block in self.blocks:
             block.draw(screen)
+        
         # Draw the player
         self.player.draw(screen)
 
         scene_name = FONT.render('Play Scene', True, (0, 0, 0))
         screen.blit(scene_name, SCENE_NAME_AREA)
-    
+        
 class Game():
     def __init__(self):
         self.active_scene = MenuScene()

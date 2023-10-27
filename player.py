@@ -5,13 +5,14 @@ class Player(pygame.sprite.Sprite):
     GRAVITY = 1
     SPEED = 5
     FPS = 60
-    FRICTION_FORCE = 0.5
-    ATTACK_RANGE = 32
+    FRICTION_FORCE = 1
+    ATTACK_RANGE = 64
     def __init__(self, x, y, width, height):
         super().__init__()
         self.image = pygame.image.load(os.path.join('Assets\Player', 'Jump.png'))
         
         self.rect = pygame.Rect(x, y, width, height)
+        self.tag = "Player"
         self.velocity = pygame.math.Vector2(0, 0)
         self.fall_count = 0 # virtual gravity
 
@@ -23,6 +24,9 @@ class Player(pygame.sprite.Sprite):
         # Cooldown & Timer
         self.dash_cd_timer = 0
         self.dash_cd = 1
+        
+        self.attack_cd_timer = 0
+        self.attack_cd = 0.2
         
         # self.dash_cd = 0
         # self.pull_cd = 0
@@ -37,10 +41,17 @@ class Player(pygame.sprite.Sprite):
         self.update_cd_timer()
     
     def draw(self, screen):
-        pygame.draw.rect(self.scene, (255, 0, 0), self.rect)
+        pygame.draw.rect(screen, (255, 0, 0), self.rect)
+        if self.attack_cd_timer > 0:
+            pos = self.rect
+            if self.isFacingRight:
+                pos = (self.rect.x + 3 * self.rect.width / 2, self.rect.y + self.rect.height / 2)
+            else:
+                pos = (self.rect.x - self.rect.width / 2, self.rect.y + self.rect.height / 2)
+            pygame.draw.circle(screen, (255, 100, 0), pos, int(self.ATTACK_RANGE / 2))
         
     def move(self):
-        self.rect.x += self.velocity.x
+        # self.rect.x += self.velocity.x
         self.rect.y += self.velocity.y
     
     def flip(self):
@@ -76,12 +87,12 @@ class Player(pygame.sprite.Sprite):
             self.velocity.y = -5
             self.isJump = True
         # attack
-        elif input_keys[pygame.K_j]:
-            pass
+        elif input_keys[pygame.K_j] and self.attack_cd_timer <= 0:
+            self.attack_cd_timer = self.attack_cd
         # dash
         elif input_keys[pygame.K_k] or input_keys[pygame.K_LSHIFT] or input_keys[pygame.K_LCTRL]:
             if self.dash_cd_timer <= 0:
-                self.velocity.x *= 3
+                self.velocity.x *= 5
                 self.dash_cd_timer = self.dash_cd
         # pull_skill
         elif input_keys[pygame.K_e]:
@@ -89,6 +100,7 @@ class Player(pygame.sprite.Sprite):
     
     def update_cd_timer(self):
         self.dash_cd_timer -= 1 / self.FPS
+        self.attack_cd_timer -= 1/self.FPS
     
     ############## Physics & Collision ##############
     def update_gravity(self):
@@ -132,5 +144,25 @@ class Player(pygame.sprite.Sprite):
         
     def get_tag(self):
         return self.tag
-
+    
+    def get_pos(self):
+        return self.rect
 # Ref https://github.com/techwithtim/Python-Platformer/
+
+class Attack:
+    def __init__(self, x, y):
+        super.__init__()
+        self.image = pygame.image.load(os.path.join('Assets\Player', 'Jump.png'))
+        self.x = x
+        self.y = y
+        self.mask = None
+
+    def collision(self, objects):
+        collide_objects = []
+        for obj in objects:
+            if pygame.sprite.collide_mask(self, obj):
+                collide_objects.append(obj)
+        
+        for obj in collide_objects:
+            if obj.get_tag() != "Player":
+                print(obj)
