@@ -130,11 +130,13 @@ class Player(pygame.sprite.Sprite):
         for obj in breakable_objects:
             if not obj.is_broken and pygame.sprite.collide_rect(self, obj):
                 obj.break_object()
-                
-                self.set_score(self.get_score() + 10)
-                if self.get_score() % 20 == 0:
-                    self.set_level(self.level + 1)
-        
+                          
+    def collect_item(self, item):
+        if item:
+            self.score += 5
+            if self.score % 20 == 0:
+                self.level += 1
+            item.kill()
     ############## Getters & Setters ##############
     def set_hp(self, hp):
         self.hp = hp     
@@ -144,14 +146,6 @@ class Player(pygame.sprite.Sprite):
         
     def get_tag(self):
         return self.tag
-    
-    def get_score(self):
-        return self.score
-    
-    def set_score(self, score):
-        self.score = score
-    
-    def set_level(self, level):
-        self.level = level
+
 
 # Ref https://github.com/techwithtim/Python-Platformer/

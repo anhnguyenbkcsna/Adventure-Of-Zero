@@ -5,6 +5,7 @@ from player import Player
 from enemy import Enemy
 from cannon import Cannon
 from object import Block, BreakableObject
+from item import Apple
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
@@ -95,6 +96,7 @@ class PlayScene(Scene):
         
         # Breakable objects
         self.generate_breakable_objects()
+        self.items = pygame.sprite.Group()
             
     def next_scene(self):
         return EndScene()
@@ -104,6 +106,18 @@ class PlayScene(Scene):
         
         for obj in self.breakable_objects:
             obj.update()
+            if obj.is_broken == True:
+                print('not object')
+                item = obj.drop_item()
+                if item:
+                    self.items.add(item)
+        
+        for item in self.items:
+            item.update()
+        
+        for item in self.items:
+            if pygame.sprite.collide_rect(self.player, item):
+                self.player.collect_item(item)
         
         self.enemyGroup.update(self.player)
         self.cannonGroup.update()
@@ -119,6 +133,9 @@ class PlayScene(Scene):
         # draw objects
         for obj in self.breakable_objects:
             obj.draw(screen)
+        
+        for item in self.items:
+            item.draw(screen)
         
         # Draw the player 
         self.player.draw(screen)

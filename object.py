@@ -1,6 +1,7 @@
 import pygame
 import random
 import os
+from item import Apple
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
@@ -21,36 +22,49 @@ class Object(pygame.sprite.Sprite):
 class BreakableObject(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
-        self.image = pygame.image.load(os.path.join('Assets/Objects', 'Idle.png'))
-        
-        self.image = pygame.transform.scale(self.image, (width, height))
         self.rect = pygame.Rect(x, y, width, height)
-    
-        self.broken_pieces = [
-            pygame.image.load(os.path.join('Assets/Objects', 'Box Pieces 1.png')),
-            pygame.image.load(os.path.join('Assets/Objects', 'Box Pieces 2.png')),
-            pygame.image.load(os.path.join('Assets/Objects', 'Box Pieces 3.png')),
-            pygame.image.load(os.path.join('Assets/Objects', 'Box Pieces 4.png'))
+        
+        self.box_sprite = [
+            pygame.image.load(os.path.join('Assets/Objects', 'Idle.png')),
+            pygame.image.load(os.path.join('Assets/Objects', 'Broken.png')),
         ]
         
         self.is_broken = False
-        self.broken_animation_timer = 20
-        self.broken_animation_duration = 800
+        self.box_state = "idle"
+        self.image = self.box_sprite[0]
+        self.image = pygame.transform.scale(self.image, (width, height))
+        
+        self.animation_timer = 0
+        self.animation_duration = 30
 
     def draw(self, screen):
-        if not self.is_broken:
-            screen.blit(self.image, self.rect)
+        screen.blit(self.image, self.rect)
 
     def break_object(self):
         self.is_broken = True
             
     def update(self):
         if self.is_broken:
-            if self.broken_animation_timer < self.broken_animation_duration:
-                self.image = self.broken_pieces[self.broken_animation_timer // (self.broken_animation_duration // 4)]
-                self.broken_animation_timer += 1
-            else:
+            self.animation_timer += 1
+            if self.animation_timer >= self.animation_duration:
+                self.animation_timer = 0
+                self.box_state = "disappear"
+
+            if self.box_state == "disappear":
                 self.kill()
+            else:
+                self.image = self.box_sprite[1]
+        else:
+            self.image = self.box_sprite[0]
+        self.image = pygame.transform.scale(self.image, (BLOCK_SIZE, BLOCK_SIZE))
+        
+    
+    def drop_item(self):
+        if self.is_broken:
+            item = Apple(self.rect.x, self.rect.y, BLOCK_SIZE, BLOCK_SIZE)
+            return item
+        return None
+            
 
 class Block(Object):
     def __init__(self, x, y, size):
