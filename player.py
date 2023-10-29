@@ -11,7 +11,7 @@ class Player(pygame.sprite.Sprite):
     HEIGHT = 50
     def __init__(self, x, y, width, height):
         super().__init__()
-        self.image = pygame.image.load(os.path.join('Assets\Player', 'Jump.png'))
+        self.image = pygame.image.load(os.path.join('Assets/Player', 'Jump.png'))
         
         self.rect = pygame.Rect(x, y, width, height)
         self.velocity = pygame.math.Vector2(0, 0)
@@ -29,8 +29,11 @@ class Player(pygame.sprite.Sprite):
         # self.dash_cd = 0
         # self.pull_cd = 0
         # self.push_cd = 0
-    def update(self, keys, objects):
-        self.update_input(keys)
+        
+        self.level = 0
+        self.score = 0
+    def update(self, keys, objects, breakable_objects):
+        self.update_input(keys, breakable_objects)
         self.update_gravity()
         self.move()
         self.mask = pygame.mask.from_surface(self.image)
@@ -49,7 +52,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.flip(self.image, True, False)
         self.isFacingRight = not self.isFacingRight
 
-    def update_input(self, input_keys):
+    def update_input(self, input_keys, breakable_objects):
         # horizontal move
         if input_keys[pygame.K_a] or input_keys[pygame.K_LEFT]:
             if self.isFacingRight:
@@ -87,14 +90,14 @@ class Player(pygame.sprite.Sprite):
                 self.dash_cd_timer = self.dash_cd
         # pull_skill
         elif input_keys[pygame.K_e]:
-            self.attack()
+            self.attack(breakable_objects)
     
     def update_cd_timer(self):
         self.dash_cd_timer -= 1 / self.FPS
     
     ############## Physics & Collision ##############
     def update_gravity(self):
-        if self.isJump == True:            
+        if self.isJump == True:
             self.velocity.y += min(1, (self.fall_count / self.FPS) * self.GRAVITY)
             self.fall_count += 1
     
@@ -123,8 +126,15 @@ class Player(pygame.sprite.Sprite):
             collide_objects.append(obj)
         return collide_objects
     
-    def attack(self):
-        pass
+    def attack(self, breakable_objects):
+        for obj in breakable_objects:
+            if not obj.is_broken and pygame.sprite.collide_rect(self, obj):
+                obj.break_object()
+                
+                self.set_score(self.get_score() + 10)
+                if self.get_score() % 20 == 0:
+                    self.set_level(self.level + 1)
+        
     ############## Getters & Setters ##############
     def set_hp(self, hp):
         self.hp = hp     
@@ -134,5 +144,14 @@ class Player(pygame.sprite.Sprite):
         
     def get_tag(self):
         return self.tag
+    
+    def get_score(self):
+        return self.score
+    
+    def set_score(self, score):
+        self.score = score
+    
+    def set_level(self, level):
+        self.level = level
 
 # Ref https://github.com/techwithtim/Python-Platformer/

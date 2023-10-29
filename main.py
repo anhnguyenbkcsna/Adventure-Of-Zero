@@ -1,9 +1,10 @@
 import pygame
 import os
+import random
 from player import Player
 from enemy import Enemy
 from cannon import Cannon
-from object import Block
+from object import Block, BreakableObject
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
@@ -13,6 +14,7 @@ pygame.init()
 SCENE_NAME_AREA = (0, 0)
 BLOCK_SIZE = 32
 FONT = pygame.font.Font('freesansbold.ttf', 32)
+SCORE_TEXT_STYLE = pygame.font.Font('freesansbold.ttf', 20)
 FPS = 60
 
 pygame.display.set_caption('Adventure Of Zero')
@@ -90,12 +92,19 @@ class PlayScene(Scene):
         self.blocks.append(Block(BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
         self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 1) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
         self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
+        
+        # Breakable objects
+        self.generate_breakable_objects()
             
     def next_scene(self):
         return EndScene()
 
     def update(self, inputs):
-        self.player.update(inputs, self.blocks)
+        self.player.update(inputs, self.blocks, self.breakable_objects)
+        
+        for obj in self.breakable_objects:
+            obj.update()
+        
         self.enemyGroup.update(self.player)
         self.cannonGroup.update()
         for cannon in self.cannonGroup.sprites():
@@ -106,15 +115,49 @@ class PlayScene(Scene):
         # Draw the blocks
         for block in self.blocks:
             block.draw(screen)
+        
+        # draw objects
+        for obj in self.breakable_objects:
+            obj.draw(screen)
+        
         # Draw the player 
         self.player.draw(screen)
         self.enemyGroup.draw(screen)
         self.cannonGroup.draw(screen)
         for cannon in self.cannonGroup.sprites():
             cannon.cannonBallGroup.draw(screen)
+            
+        # Display the current level and score
+        level_text = FONT.render(f'Level: {self.player.level}', True, (0, 0, 0))
+        score_text = FONT.render(f'Score: {self.player.score}', True, (0, 0, 0))
+    
+        screen.blit(level_text, (SCREEN_WIDTH - 200, 10))
+        screen.blit(score_text, (SCREEN_WIDTH - 200, 50))
 
         scene_name = FONT.render('Play Scene', True, (0, 0, 0))
         screen.blit(scene_name, SCENE_NAME_AREA)
+        
+    def generate_breakable_objects(self):
+        self.breakable_objects = pygame.sprite.Group()
+        existing_positions = []
+
+        for i in range(5):
+            valid_position = False
+            while not valid_position:
+                x = random.randint(BLOCK_SIZE * 2, SCREEN_WIDTH // 2 - BLOCK_SIZE * 2)
+                y = SCREEN_HEIGHT - BLOCK_SIZE * 2
+                new_object = BreakableObject(x, y, BLOCK_SIZE, BLOCK_SIZE)
+                valid_position = True
+
+                for position in existing_positions:
+                    if abs(x - position[0]) <= 20:
+                        valid_position = False
+                        break
+
+                if valid_position:
+                    self.breakable_objects.add(new_object)
+                    existing_positions.append((x, y))
+        
     
 class Game():
     def __init__(self):
