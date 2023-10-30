@@ -96,7 +96,7 @@ class PlayScene(Scene):
 
     def update(self, inputs):
         self.player.update(inputs, self.blocks)
-        self.enemyGroup.update(self.player)
+        self.enemyGroup.update(self.player, inputs)
         self.cannonGroup.update()
         for cannon in self.cannonGroup.sprites():
             cannon.cannonBallGroup.update(self.player)
