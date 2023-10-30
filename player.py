@@ -5,7 +5,10 @@ class Player(pygame.sprite.Sprite):
     GRAVITY = 1
     SPEED = 5
     FPS = 60
-    FRICTION_FORCE = 1
+    FRICTION_FORCE = 0.5
+    ATTACK_RANGE = 32
+    WIDTH = 30
+    HEIGHT = 50
     def __init__(self, x, y, width, height):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
@@ -99,6 +102,9 @@ class Player(pygame.sprite.Sprite):
         self.horizontal_collision(objects, self.velocity.x)        
         
         self.update_cd_timer()
+    
+    def draw(self, screen):
+        pygame.draw.rect(screen, (255, 0, 0), self.rect)
         
         if self.attack_cd_timer > 0:
             self.attack.collision(objects)
