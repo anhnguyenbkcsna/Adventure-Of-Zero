@@ -1,7 +1,7 @@
 import pygame
 import random
 import os
-from item import Apple
+from item import Apple, Banana
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
@@ -23,14 +23,15 @@ class BreakableObject(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
+        self.dropped_item = False
         
         self.box_sprite = [
             pygame.image.load(os.path.join('Assets/Objects', 'Idle.png')),
             pygame.image.load(os.path.join('Assets/Objects', 'Broken.png')),
+            pygame.image.load(os.path.join('Assets/Objects', 'blank_box.png')),
         ]
         
         self.is_broken = False
-        self.box_state = "idle"
         self.image = self.box_sprite[0]
         self.image = pygame.transform.scale(self.image, (width, height))
         
@@ -47,11 +48,7 @@ class BreakableObject(pygame.sprite.Sprite):
         if self.is_broken:
             self.animation_timer += 1
             if self.animation_timer >= self.animation_duration:
-                self.animation_timer = 0
-                self.box_state = "disappear"
-
-            if self.box_state == "disappear":
-                self.kill()
+                self.image = self.box_sprite[2]
             else:
                 self.image = self.box_sprite[1]
         else:
@@ -61,8 +58,11 @@ class BreakableObject(pygame.sprite.Sprite):
     
     def drop_item(self):
         if self.is_broken:
-            item = Apple(self.rect.x, self.rect.y, BLOCK_SIZE, BLOCK_SIZE)
-            return item
+            item_prob = random.uniform(0, 1)
+            if item_prob <= 0.6667:
+                return Apple(self.rect.x, self.rect.y, BLOCK_SIZE, BLOCK_SIZE)
+            else:
+                return Banana(self.rect.x, self.rect.y, BLOCK_SIZE, BLOCK_SIZE)
         return None
             
 

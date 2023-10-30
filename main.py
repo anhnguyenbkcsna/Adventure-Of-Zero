@@ -107,16 +107,19 @@ class PlayScene(Scene):
         for obj in self.breakable_objects:
             obj.update()
             if obj.is_broken == True:
-                print('not object')
-                item = obj.drop_item()
-                if item:
-                    self.items.add(item)
+                drop_prob = random.uniform(0, 1)
+                if drop_prob >= 0.5 and obj.dropped_item == False:
+                    item = obj.drop_item()
+                    if item:
+                        self.items.add(item)
+                obj.dropped_item = True
+            
         
         for item in self.items:
             item.update()
         
         for item in self.items:
-            if pygame.sprite.collide_rect(self.player, item):
+            if pygame.sprite.collide_rect(self.player, item) and self.player.collecting:
                 self.player.collect_item(item)
         
         self.enemyGroup.update(self.player)
