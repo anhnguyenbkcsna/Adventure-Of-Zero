@@ -1,13 +1,14 @@
 import pygame
 
+BLOCK_SIZE = 32
 class Object(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height, name=None):
+    def __init__(self, x, y, name=None):
         super().__init__()
-        self.rect = pygame.Rect(x, y, width, height)
-        self.image = pygame.Surface((width, height), pygame.SRCALPHA)
+        self.rect = pygame.Rect(x, y, BLOCK_SIZE, BLOCK_SIZE)
+        self.image = pygame.Surface((BLOCK_SIZE, BLOCK_SIZE), pygame.SRCALPHA)
         self.name = name
-        self.width = width
-        self.height = height
+        self.width = BLOCK_SIZE
+        self.height = BLOCK_SIZE
         self.color = (0, 100, 100)
     
     def draw(self, screen):
@@ -27,9 +28,11 @@ class Object(pygame.sprite.Sprite):
         self.image.fill(self.color)
 
 class Block(Object):
-    def __init__(self, x, y, size):
-        super().__init__(x, y, size, size)
+    def __init__(self, x, y):
+        super().__init__(x, y)
         self.image.fill(self.color)
         self.name = 'block'
         self.mask = pygame.mask.from_surface(self.image)
-    
+    def update(self, player):
+        self.update_camera(player.velocity.x, player.move_camera)
+        self.mask = pygame.mask.from_surface(self.image)

@@ -1,12 +1,13 @@
 import pygame
 import os
+from object import Object
 
 class AnimInfo():
    def __init__(self, startFrame, numFrames):
        self.startFrame = startFrame
        self.numFrames = numFrames 
   
-class CannonBall(pygame.sprite.Sprite):
+class CannonBall(Object, pygame.sprite.Sprite):
     
     YTOCANNONY = 8 # sPACE BETWEEN y of cannon ball to y of cannon
     XTOCANNONX = -16 # sPACE BETWEEN y of cannon ball to y of cannon
@@ -19,7 +20,7 @@ class CannonBall(pygame.sprite.Sprite):
     EXPLODE_STATE = 1  
     
     def __init__(self, x, y, isFacingRight):
-        super().__init__()
+        super().__init__(x, y, 'CannonBall')
         
         self.sprites = []
         self.sprites.append(pygame.image.load(os.path.join('Assets\Cannon', 'Cannon Ball Idle/1.png')))
@@ -45,10 +46,15 @@ class CannonBall(pygame.sprite.Sprite):
         self.moveDistance = 0
         self.velocityX = self.SPEED if isFacingRight else -self.SPEED
         self.state = self.ALIVE_STATE
+        self.mask = pygame.mask.from_surface(self.image)
     
-    def update(self, player):     
+    def update(self, player):
+        self.mask = pygame.mask.from_surface(self.image)
+        self.update_camera(player.velocity.x, player.move_camera)
+        
         # Player die if touch ball (thay kill bang ham chuyen trang thai player die)
         if self.collide_player(player):
+            self.kill()
             player.kill()
         
         # Move cannon ball a distance == Cannon.SHOOTING_RANGE
@@ -78,7 +84,7 @@ class CannonBall(pygame.sprite.Sprite):
     def collide_player(self, player):
         return pygame.sprite.collide_rect(self, player)
            
-class Cannon(pygame.sprite.Sprite):   
+class Cannon(Object, pygame.sprite.Sprite):   
     
     SHOOTING_FRAME_RATE = 120
     SHOOTING_RANGE = 400
@@ -91,7 +97,7 @@ class Cannon(pygame.sprite.Sprite):
     DEAD_STATE = 2
     
     def __init__(self, x, y, isFacingRight):
-        super().__init__()
+        super().__init__(x, y, 'Cannon')
         
         self.sprites = []
         self.sprites.append(pygame.image.load(os.path.join('Assets\Cannon', 'Cannon Idle/1.png')))
@@ -121,9 +127,13 @@ class Cannon(pygame.sprite.Sprite):
         self.isFacingRight = isFacingRight
         self.state = self.SHOOTING_STATE
         self.cannonBallGroup = pygame.sprite.Group()
+        self.mask = pygame.mask.from_surface(self.image)
 
-    def update(self):
-            
+    def update(self, player):
+        # Create mask to detect collision
+        self.mask = pygame.mask.from_surface(self.image)
+        self.update_camera(player.velocity.x, player.move_camera)
+        
         # Auto shoot every SHOOTING_FRAME_RATE
         if self.state != self.DEAD_STATE:
             if self.frameCountShooting == 0:
@@ -163,7 +173,4 @@ class Cannon(pygame.sprite.Sprite):
     
     def get_hp(self):
         return self.hp
-        
-    def get_tag(self):
-        return self.tag
 

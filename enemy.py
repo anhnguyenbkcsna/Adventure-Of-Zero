@@ -1,5 +1,6 @@
 import pygame
 import os
+from object import Object
 
 class AnimInfo():
    def __init__(self, startFrame, numFrames):
@@ -32,7 +33,7 @@ class RayCast2D():
             return playerX >= self.x and playerX < self.x + self.length
         return playerX + player.WIDTH > self.x - self.length and playerX + player.WIDTH <= self.x  
                  
-class Enemy(pygame.sprite.Sprite):   
+class Enemy(Object, pygame.sprite.Sprite):   
     
     PATROL_SPEED = 1
     ATTACK_SPEED = 6
@@ -47,8 +48,7 @@ class Enemy(pygame.sprite.Sprite):
     DEAD_STATE = 2
     
     def __init__(self, x, y, flipPoint1, flipPoint2):
-        super().__init__()
-        
+        super().__init__(x, y, 'Enemy')
         self.frame_count_change_speed = -1
         
         self.sprites = []
@@ -86,10 +86,14 @@ class Enemy(pygame.sprite.Sprite):
         self.state = self.PATROL_STATE
         self.flipPoint1 = flipPoint1
         self.flipPoint2 = flipPoint2
+        self.mask = pygame.mask.from_surface(self.image)
 
     def update(self, player):
+        # Create mask to detect collision
+        self.mask = pygame.mask.from_surface(self.image)
+        self.update_camera(player.velocity.x, player.move_camera)
         self.move()
-        
+
         # Player in attack range
         if self.state != self.DEAD_STATE:
             if self.rayCast2d.collide_player(player):
@@ -162,6 +166,4 @@ class Enemy(pygame.sprite.Sprite):
     def get_hp(self):
         return self.hp
         
-    def get_tag(self):
-        return self.tag
 

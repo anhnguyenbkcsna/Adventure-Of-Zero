@@ -85,25 +85,32 @@ class PlayScene(Scene):
         # generate ground
         self.blocks = []
         for i in range(SCREEN_WIDTH // (BLOCK_SIZE * 2)):
-            self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE))
-        self.blocks.append(Block(0, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
-        self.blocks.append(Block(BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
-        self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 1) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
-        self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
+            self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE))
+        self.blocks.append(Block(0, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        self.blocks.append(Block(BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 1) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 3) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
             
     def next_scene(self):
         return EndScene()
 
-    def update(self, inputs):        
-        self.player.update(inputs, self.blocks)
-
-        # Update camera
-        for block in self.blocks:
-            block.update_camera(self.player.velocity.x, self.player.move_camera)
-        self.enemyGroup.update(self.player)
-        self.cannonGroup.update()
+    def update(self, inputs):
+        objects = []
+        objects.extend(self.blocks)
+        objects.extend(self.enemyGroup)
+        objects.extend(self.cannonGroup)
         for cannon in self.cannonGroup.sprites():
-            cannon.cannonBallGroup.update(self.player)
+            objects.extend(cannon.cannonBallGroup)
+        
+        self.player.update(inputs, objects)
+        
+        for obj in objects:
+            obj.update(self.player)
+        # self.enemyGroup.update(self.player)
+        # self.cannonGroup.update(self.player)
+        # for cannon in self.cannonGroup.sprites():
+        #     cannon.cannonBallGroup.update(self.player)
     
     def render(self):
         screen.fill((255, 255, 255))
@@ -112,13 +119,13 @@ class PlayScene(Scene):
         for block in self.blocks:
             block.draw(screen)
         # Draw the player 
-        self.player.draw(screen)
         self.enemyGroup.draw(screen)
         self.cannonGroup.draw(screen)
         for cannon in self.cannonGroup.sprites():
             cannon.cannonBallGroup.draw(screen)
 
         scene_name = FONT.render('Play Scene', True, (0, 0, 0))
+        self.player.draw(screen)
         screen.blit(scene_name, SCENE_NAME_AREA)
         
 class Game():

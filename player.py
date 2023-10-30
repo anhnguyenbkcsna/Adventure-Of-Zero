@@ -102,9 +102,6 @@ class Player(pygame.sprite.Sprite):
         self.horizontal_collision(objects, self.velocity.x)        
         
         self.update_cd_timer()
-    
-    def draw(self, screen):
-        pygame.draw.rect(screen, (255, 0, 0), self.rect)
         
         if self.attack_cd_timer > 0:
             self.attack.collision(objects)
@@ -193,6 +190,9 @@ class Player(pygame.sprite.Sprite):
         collide_objects = []
         for obj in objects:
             if pygame.sprite.collide_mask(self, obj):
+                if obj.get_tag() != "block":
+                    print("Collision detect: Player + " + obj.get_tag())
+                
                 if dy > 0:
                     # land on the object
                     self.rect.bottom = obj.rect.top
@@ -209,7 +209,7 @@ class Player(pygame.sprite.Sprite):
         collide_objects = []
         for obj in objects:
             if pygame.sprite.collide_mask(self, obj):
-                print("Collision detect: Player + " +obj.get_tag())
+                print("Collision detect: Player + " + obj.get_tag())
                 if dx > 0:
                     # right hit the object
                     self.rect.right = obj.rect.left
