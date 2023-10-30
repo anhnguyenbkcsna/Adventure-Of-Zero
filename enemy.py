@@ -94,10 +94,7 @@ class Enemy(pygame.sprite.Sprite):
         
         self.hp = 2
 
-    def update(self, player, input_keys):
-        if input_keys[pygame.K_t]:
-            self.take_dmg(1)
-        
+    def update(self, player):
         self.move()
         
         # Player in attack range
