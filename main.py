@@ -66,23 +66,23 @@ class EndScene(Scene):
 class PlayScene(Scene):
     def __init__(self):
         super().__init__()
-        self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 30, 50)
+        self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 50, 50)
         
         # generate ground
         self.blocks = []
         for i in range(SCREEN_WIDTH // (BLOCK_SIZE * 2)):
             self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE))
-        self.blocks.append(Block(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE - BLOCK_SIZE, BLOCK_SIZE))
+        self.blocks.append(Block(BLOCK_SIZE * 4, SCREEN_HEIGHT - BLOCK_SIZE - BLOCK_SIZE, BLOCK_SIZE))
             
     def next_scene(self):
         return EndScene()
 
     def update(self, inputs):        
         self.player.update(inputs, self.blocks)
-        
+
         # Update camera
         for block in self.blocks:
-            block.update_camera(self.player.velocity.x)
+            block.update_camera(self.player.velocity.x, self.player.move_camera)
     
     def render(self):
         screen.fill((255, 255, 255))
