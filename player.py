@@ -19,6 +19,7 @@ class Player(pygame.sprite.Sprite):
         self.isFacingRight = True
         self.isJump = True
         self.mask = None
+        self.collecting = False
         
         self.move_camera = True
         
@@ -169,7 +170,12 @@ class Player(pygame.sprite.Sprite):
                 self.dash_cd_timer = self.dash_cd
         # pull_skill
         elif input_keys[pygame.K_e]:
-            self.attack(breakable_objects)
+            pass
+        
+        elif input_keys[pygame.K_c]:
+            self.collecting = True
+        else:
+            self.collecting = False
     
     def update_cd_timer(self):
         self.dash_cd_timer -= 1 / self.FPS
@@ -215,12 +221,12 @@ class Player(pygame.sprite.Sprite):
     #             obj.break_object()
                           
     def collect_item(self, item):
-        if item:
-            self.score += 5
+        if item and item.is_collected == False:
+            item.kill()
+            self.score += item.score
             if self.score % 20 == 0:
                 self.level += 1
-            item.kill()
-
+            item.is_collected = True
     ############## Getters & Setters ##############
     def horizontal_collision(self, objects, dx):
         collide_objects = []
