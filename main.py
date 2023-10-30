@@ -71,7 +71,7 @@ class EndScene(Scene):
 class PlayScene(Scene):
     def __init__(self):
         super().__init__()
-        self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 30, 50)
+        self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 50, 50)
         
         # Enemy
         self.enemyGroup = pygame.sprite.Group()
@@ -97,6 +97,7 @@ class PlayScene(Scene):
         # Breakable objects
         self.generate_breakable_objects()
         self.items = pygame.sprite.Group()
+        self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE))
             
     def next_scene(self):
         return EndScene()
@@ -121,11 +122,25 @@ class PlayScene(Scene):
         
         self.enemyGroup.update(self.player)
         self.cannonGroup.update()
+        objects = []
+        objects.extend(self.blocks)
+        objects.extend(self.enemyGroup)
+        objects.extend(self.cannonGroup)
         for cannon in self.cannonGroup.sprites():
-            cannon.cannonBallGroup.update(self.player)
+            objects.extend(cannon.cannonBallGroup)
+        
+        self.player.update(inputs, objects)
+        
+        for obj in objects:
+            obj.update(self.player)
+        # self.enemyGroup.update(self.player)
+        # self.cannonGroup.update(self.player)
+        # for cannon in self.cannonGroup.sprites():
+        #     cannon.cannonBallGroup.update(self.player)
     
     def render(self):
         screen.fill((255, 255, 255))
+        
         # Draw the blocks
         for block in self.blocks:
             block.draw(screen)
@@ -138,7 +153,6 @@ class PlayScene(Scene):
             item.draw(screen)
         
         # Draw the player 
-        self.player.draw(screen)
         self.enemyGroup.draw(screen)
         self.cannonGroup.draw(screen)
         for cannon in self.cannonGroup.sprites():
@@ -152,6 +166,7 @@ class PlayScene(Scene):
         screen.blit(score_text, (SCREEN_WIDTH - 200, 50))
 
         scene_name = FONT.render('Play Scene', True, (0, 0, 0))
+        self.player.draw(screen)
         screen.blit(scene_name, SCENE_NAME_AREA)
         
     def generate_breakable_objects(self):
