@@ -19,6 +19,10 @@ FPS = 60
 
 pygame.display.set_caption('Adventure Of Zero')
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+# class World():
+    
+
 class Scene():
     def __init__(self):
         self.nextscene = self
@@ -96,28 +100,28 @@ class PlayScene(Scene):
         
         # Enemy
         self.enemyGroup = pygame.sprite.Group()
-        # enemy = Enemy(BLOCK_SIZE*3, SCREEN_HEIGHT - BLOCK_SIZE - Enemy.HEIGHT + Enemy.FOOT_SPACE, BLOCK_SIZE*2, (SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE)
-        # self.enemyGroup.add(enemy)
+        enemy = Enemy(BLOCK_SIZE*3, SCREEN_HEIGHT - BLOCK_SIZE - Enemy.HEIGHT + Enemy.FOOT_SPACE, BLOCK_SIZE*2, (SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE)
+        self.enemyGroup.add(enemy)
         
         # Cannon
         self.cannonGroup = pygame.sprite.Group()
         cannon = Cannon(0, SCREEN_HEIGHT - BLOCK_SIZE - Cannon.HEIGHT + Cannon.FOOT_SPACE, True)
         self.cannonGroup.add(cannon)
-        # cannon = Cannon((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2 * BLOCK_SIZE - Cannon.HEIGHT + Cannon.FOOT_SPACE, False)
-        # self.cannonGroup.add(cannon)
+        cannon = Cannon((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2 * BLOCK_SIZE - Cannon.HEIGHT + Cannon.FOOT_SPACE, False)
+        self.cannonGroup.add(cannon)
         
         # generate ground
         self.blocks = []
         for i in range(SCREEN_WIDTH // (BLOCK_SIZE * 2)):
             self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE))
-        # self.blocks.append(Block(0, SCREEN_HEIGHT - 2*BLOCK_SIZE))
-        # self.blocks.append(Block(BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        self.blocks.append(Block(0, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        self.blocks.append(Block(BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
         self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 1) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
         self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
         
         # Breakable objects
         self.generate_breakable_objects()
-        # self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE))
+        self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE))
             
     def next_scene(self):
         return EndScene()
@@ -170,20 +174,28 @@ class PlayScene(Scene):
         self.player.draw(screen)
         
         # Upgrde character menu
-        if self.player.score >= 50:
-            button = pygame.Rect(SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT // 2 - 300, 600, 300)
+        if (self.player.score // 50) > self.player.upgrade_time:
+            button = pygame.Rect(SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT // 2 - 300, 600, 375)
             buff_atk = pygame.Rect(SCREEN_WIDTH // 2 - 300 + 25, SCREEN_HEIGHT // 2 - 300 + 25, 250, 250)
             buff_hp = pygame.Rect(SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT // 2 - 300 + 25, 250, 250)
+            skip_btn = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2, 200, 50)
             pygame.draw.rect(screen, (150, 70, 70), button, 10)
             pygame.draw.rect(screen, (150, 70, 70), buff_atk, 10)
             pygame.draw.rect(screen, (150, 70, 70), buff_hp, 10)
+            pygame.draw.rect(screen, (150, 70, 70), skip_btn, 10)
             if pygame.mouse.get_pressed()[0]:
                 if buff_atk.collidepoint(pygame.mouse.get_pos()):
                     self.player.atk += 1
                     self.player.score -= 50
+                    self.player.upgrade_time += 1
                 elif buff_hp.collidepoint(pygame.mouse.get_pos()):
                     self.player.hp += 1
                     self.player.score -= 50
+                    self.player.upgrade_time += 1
+                elif skip_btn.collidepoint(pygame.mouse.get_pos()):
+                    self.player.upgrade_time = self.player.score // 50
+                    print(self.player.upgrade_time)
+            
         
     def generate_breakable_objects(self):
         self.breakable_objects = pygame.sprite.Group()
@@ -212,6 +224,9 @@ class Game():
         self.active_scene = MenuScene()
     
     def run(self):
+        bg_sound = pygame.mixer.Sound(os.path.join('Assets\Sound', 'Game_sound.mp3'))
+        bg_sound.set_volume(0.5)
+        pygame.mixer.Sound.play(bg_sound, -1)
         while self.active_scene != None:
             pressed_keys = pygame.key.get_pressed()
             # filtered_events = []

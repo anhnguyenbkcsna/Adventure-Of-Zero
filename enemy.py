@@ -171,6 +171,7 @@ class Enemy(Object, pygame.sprite.Sprite):
         self.kill()
         
     def attack(self):
+        pygame.mixer.music.load(os.path.join('Assets\Sound', 'enemy_atk.mp3'))
         self.state = self.ATTACK_STATE
         self.frameCount = 0
         self.frame_count_change_speed = 0  
@@ -191,6 +192,7 @@ class Enemy(Object, pygame.sprite.Sprite):
           
     def take_dmg(self, dmg): # Immune when being taken dmg
         if self.state != self.TAKE_DMG_STATE and self.invincible_time < 0:
+            pygame.mixer.Sound.play(pygame.mixer.Sound(os.path.join('Assets\Sound', 'bonk.mp3')))
             self.state = self.TAKE_DMG_STATE
             self.invincible_time = 1
             self.frameCount = 0

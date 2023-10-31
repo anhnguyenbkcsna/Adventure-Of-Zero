@@ -37,6 +37,7 @@ class Player(pygame.sprite.Sprite):
         self.score = 0
         
         self.invincible = 3
+        self.upgrade_time = 0
 
         #region Animation
         # Idle
@@ -276,6 +277,7 @@ class Player(pygame.sprite.Sprite):
         return self.rect
 
     def take_dmg(self, dmg): # Immune when being taken dmg
+        pygame.mixer.Sound.play(pygame.mixer.Sound(os.path.join('Assets\Sound', 'be_hit.wav')))
         if self.anim_state != "Hit":
             self.anim_state = "Hit"
             self.anim_count = 0    
@@ -327,7 +329,9 @@ class Attack(pygame.sprite.Sprite):
         for obj in objects:
             if pygame.sprite.collide_mask(self, obj):
                 # print("Collision detect: Attack + " + obj.get_tag())
-                if obj.get_tag() == "Enemy" or obj.get_tag() == "Cannon":
+                if obj.get_tag() == "Enemy":
+                    obj.take_dmg(self.atk)
+                elif obj.get_tag() == "Cannon":
                     obj.take_dmg(self.atk)
                 elif obj.get_tag() == "CannonBall":
                     obj.change_direction(objects)                

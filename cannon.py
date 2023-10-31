@@ -86,6 +86,7 @@ class CannonBall(Object, pygame.sprite.Sprite):
     
     def change_direction(self, objects):
         if self.canHit:
+            pygame.mixer.Sound.play(pygame.mixer.Sound(os.path.join('Assets\Sound', 'hit_enemy.mp3')))
             self.canHit = False
             self.isFacingRight = not self.isFacingRight
         # for obj in objects:
@@ -200,6 +201,7 @@ class Cannon(Object, pygame.sprite.Sprite):
      
     def take_dmg(self, dmg): # Immune when being taken dmg
         if self.state != self.TAKE_DMG_STATE:
+            pygame.mixer.Sound.play(pygame.mixer.Sound(os.path.join('Assets\Sound', 'hit_enemy.mp3')))
             self.state = self.TAKE_DMG_STATE
             self.frameCount = 0    
             self.hp -= dmg   
