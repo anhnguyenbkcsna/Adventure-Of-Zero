@@ -21,7 +21,8 @@ class CannonBall(Object, pygame.sprite.Sprite):
     
     def __init__(self, x, y, isFacingRight):
         super().__init__(x, y, 'CannonBall')
-        
+        self.isFacingRight = isFacingRight
+        self.canHit = True
         self.sprites = []
         self.sprites.append(pygame.image.load(os.path.join('Assets\Cannon', 'Cannon Ball Idle/1.png')))
         self.sprites.append(pygame.image.load(os.path.join('Assets\Cannon', 'Cannon Ball Explosion/1.png')))
@@ -45,7 +46,8 @@ class CannonBall(Object, pygame.sprite.Sprite):
         self.rect = pygame.Rect(x, y, self.WIDTH, self.HEIGHT)
 
         self.moveDistance = 0
-        self.velocityX = self.SPEED if isFacingRight else -self.SPEED
+        # self.velocityX = self.SPEED if isFacingRight else -self.SPEED
+        self.velocityX = self.SPEED
         self.state = self.ALIVE_STATE
         self.mask = pygame.mask.from_surface(self.image)
     
@@ -74,10 +76,25 @@ class CannonBall(Object, pygame.sprite.Sprite):
                 self.frameCount = 0
                 
     def move(self):
-        self.rect.x += self.velocityX
+        if self.isFacingRight:
+            self.rect.x += self.velocityX
+        else:
+            self.rect.x -= self.velocityX
         self.moveDistance += self.velocityX
         if self.moveDistance*self.moveDistance == Cannon.SHOOTING_RANGE*Cannon.SHOOTING_RANGE:
             self.explode()
+    
+    def change_direction(self, objects):
+        if self.canHit:
+            self.canHit = False
+            self.isFacingRight = not self.isFacingRight
+        # for obj in objects:
+            
+        #     if pygame.sprite.collide_mask(self, obj) and obj.get_tag() != "CannonBall":
+        #         print(obj.get_tag())
+        #         if obj.get_tag() == "Enemy" or obj.get_tag() == "Cannon":
+        #             obj.take_dmg(1)
+        #             self.explode()
     
     def explode(self):
         self.state = self.EXPLODE_STATE

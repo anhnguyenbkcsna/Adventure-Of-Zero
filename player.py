@@ -99,7 +99,7 @@ class Player(pygame.sprite.Sprite):
         self.image = self.idle[0]
         self.mask = pygame.mask.from_surface(self.image)
 
-        self.attack = Attack()
+        self.attack = Attack(self.atk)
     def update(self, keys, objects):
         self.update_input(keys)
         self.update_gravity()
@@ -210,8 +210,8 @@ class Player(pygame.sprite.Sprite):
         collide_objects = []
         for obj in objects:
             if pygame.sprite.collide_mask(self, obj):
-                if obj.get_tag() != "block":
-                    print("Verticle collide: Player + " + obj.get_tag())
+                # if obj.get_tag() != "block":
+                    # print("Verticle collide: Player + " + obj.get_tag())
                 if self.invincible <= 0:
                     if obj.get_tag() == "Enemy" or obj.get_tag() == "CannonBall":
                         self.take_dmg(self.ENEMY_DMG)
@@ -243,9 +243,9 @@ class Player(pygame.sprite.Sprite):
         collide_objects = []
         for obj in objects:
             if pygame.sprite.collide_mask(self, obj):
-                print("Horizontal collide: Player + " + obj.get_tag())
-                if self.invincible <= 0:
-                    if obj.get_tag() == "Enemy" or obj.get_tag() == "CannonBall":
+                # print("Horizontal collide: Player + " + obj.get_tag())
+                if obj.get_tag() == "Enemy" or obj.get_tag() == "CannonBall":
+                    if self.invincible <= 0:
                         self.take_dmg(self.ENEMY_DMG)
                 else:
                     if dx > 0:
@@ -313,8 +313,9 @@ class Player(pygame.sprite.Sprite):
 
 class Attack(pygame.sprite.Sprite):
     ATTACK_RANGE = 48
-    def __init__(self):
+    def __init__(self, atk):
         super().__init__()
+        self.atk = atk
         self.isFacingRight = False
         self.image = pygame.image.load(os.path.join('Assets\Player', 'atk.png'))
         self.rect = pygame.Rect(0, 0, self.ATTACK_RANGE, self.ATTACK_RANGE)
@@ -325,8 +326,12 @@ class Attack(pygame.sprite.Sprite):
         collide_objects = []
         for obj in objects:
             if pygame.sprite.collide_mask(self, obj):
-                print("Collision detect: Attack + " + obj.get_tag())
-                # obj.change_color((255, 0, 0)) # detect atk collision
+                # print("Collision detect: Attack + " + obj.get_tag())
+                if obj.get_tag() == "Enemy" or obj.get_tag() == "Cannon":
+                    obj.take_dmg(self.atk)
+                elif obj.get_tag() == "CannonBall":
+                    obj.change_direction(objects)                
+                
                 collide_objects.append(obj)
                 
                 if obj.get_tag() == "Breakable Object":

@@ -28,7 +28,7 @@ class RayCast2D():
         if playerY + player.HEIGHT != self.y + Enemy.HEIGHT - Enemy.FOOT_SPACE:
             return False
         if self.isFacingRight:
-            print(self.x,self.length)
+            # print(self.x,self.length)
             return playerX >= self.x and playerX < self.x + self.length
         return playerX + player.WIDTH > self.x - self.length and playerX + player.WIDTH <= self.x  
                  
@@ -92,6 +92,7 @@ class Enemy(Object, pygame.sprite.Sprite):
         self.flipPoint2 = flipPoint2
         
         self.hp = 5
+        self.invincible_time = 0
         self.mask = pygame.mask.from_surface(self.image)
 
     def update(self, player):
@@ -105,10 +106,13 @@ class Enemy(Object, pygame.sprite.Sprite):
         
         self.move()
 
+        self.invincible_time -= 1/60
+        if self.hp <= 0:
+            self.dead()
         # Player in attack range
         if self.state != self.DEAD_STATE and self.state != self.TAKE_DMG_STATE:
             if self.rayCast2d.collide_player(player):
-                print("Player in attack range")
+                # print("Player in attack range")
                 if self.state != self.ATTACK_STATE: self.attack()
             else:
                 if self.state != self.PATROL_STATE: self.patrol()
@@ -160,10 +164,11 @@ class Enemy(Object, pygame.sprite.Sprite):
         self.rayCast2d.flip()
     
     def dead(self):
-        self.state = self.DEAD_STATE
-        self.frameCount = 0
-        self.frame_count_change_speed = -1
-        self.velocity.x = 0
+        # self.state = self.DEAD_STATE
+        # self.frameCount = 0
+        # self.frame_count_change_speed = -1
+        # self.velocity.x = 0
+        self.kill()
         
     def attack(self):
         self.state = self.ATTACK_STATE
@@ -185,13 +190,16 @@ class Enemy(Object, pygame.sprite.Sprite):
             self.rayCast2d.change_x(self.rect.x, self.flipPoint1, self.flipPoint2)
           
     def take_dmg(self, dmg): # Immune when being taken dmg
-        if self.state != self.TAKE_DMG_STATE:
+        if self.state != self.TAKE_DMG_STATE and self.invincible_time < 0:
             self.state = self.TAKE_DMG_STATE
-            self.frameCount = 0    
+            self.invincible_time = 1
+            self.frameCount = 0
             self.frame_count_change_speed = -1
             self.velocity.x = 0
-            self.hp -= dmg  
-        
+            self.hp -= dmg 
+            print(self.hp)
+        else:
+            self.patrol()        
     ############## Getters & Setters ##############
     def set_hp(self, hp):
         self.hp = hp     

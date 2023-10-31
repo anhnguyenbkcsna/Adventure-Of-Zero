@@ -19,7 +19,6 @@ FPS = 60
 
 pygame.display.set_caption('Adventure Of Zero')
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    
 class Scene():
     def __init__(self):
         self.nextscene = self
@@ -97,28 +96,28 @@ class PlayScene(Scene):
         
         # Enemy
         self.enemyGroup = pygame.sprite.Group()
-        enemy = Enemy(BLOCK_SIZE*3, SCREEN_HEIGHT - BLOCK_SIZE - Enemy.HEIGHT + Enemy.FOOT_SPACE, BLOCK_SIZE*2, (SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE)
-        self.enemyGroup.add(enemy)
+        # enemy = Enemy(BLOCK_SIZE*3, SCREEN_HEIGHT - BLOCK_SIZE - Enemy.HEIGHT + Enemy.FOOT_SPACE, BLOCK_SIZE*2, (SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE)
+        # self.enemyGroup.add(enemy)
         
         # Cannon
         self.cannonGroup = pygame.sprite.Group()
-        cannon = Cannon(0, SCREEN_HEIGHT - 2 * BLOCK_SIZE - Cannon.HEIGHT + Cannon.FOOT_SPACE, True)
+        cannon = Cannon(0, SCREEN_HEIGHT - BLOCK_SIZE - Cannon.HEIGHT + Cannon.FOOT_SPACE, True)
         self.cannonGroup.add(cannon)
-        cannon = Cannon((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2 * BLOCK_SIZE - Cannon.HEIGHT + Cannon.FOOT_SPACE, False)
-        self.cannonGroup.add(cannon)
+        # cannon = Cannon((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2 * BLOCK_SIZE - Cannon.HEIGHT + Cannon.FOOT_SPACE, False)
+        # self.cannonGroup.add(cannon)
         
         # generate ground
         self.blocks = []
         for i in range(SCREEN_WIDTH // (BLOCK_SIZE * 2)):
             self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE))
-        self.blocks.append(Block(0, SCREEN_HEIGHT - 2*BLOCK_SIZE))
-        self.blocks.append(Block(BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        # self.blocks.append(Block(0, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        # self.blocks.append(Block(BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
         self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 1) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
         self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
         
         # Breakable objects
         self.generate_breakable_objects()
-        self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE))
+        # self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE))
             
     def next_scene(self):
         return EndScene()
