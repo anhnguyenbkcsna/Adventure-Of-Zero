@@ -163,7 +163,7 @@ class Apple(Item):
         self.item_sprites.append(pygame.image.load(os.path.join('Assets/Objects', 'apple_15.png')))
         
         for i in range(len(self.item_sprites)):
-            self.item_sprites[i] = pygame.transform.scale(self.item_sprites[i], (BLOCK_SIZE * 2, BLOCK_SIZE * 2))
+            self.item_sprites[i] = pygame.transform.scale(self.item_sprites[i], (BLOCK_SIZE, BLOCK_SIZE))
         
         self.current_sprite = 0
         self.image = self.item_sprites[self.current_sprite]
