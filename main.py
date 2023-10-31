@@ -48,7 +48,30 @@ class MenuScene(Scene):
     
     def render(self):
         screen.fill((0, 0, 0))
-        scene_name = FONT.render('Menu Scene', True, (255, 255, 255))
+        play_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 100, 200, 100)
+        option_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100, 200, 100)
+        pygame.draw.rect(screen, (255, 255, 255), play_button)
+        pygame.draw.rect(screen, (255, 255, 255), option_button)
+        # screen.blit(play_button, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 100))
+        
+        if pygame.mouse.get_pressed()[0]:
+            if play_button.collidepoint(pygame.mouse.get_pos()):
+                self.nextscene = self.next_scene()
+            elif option_button.collidepoint(pygame.mouse.get_pos()):
+                self.nextscene = OptionScene()
+class OptionScene(Scene):
+    def __init__(self):
+        super().__init__()
+    
+    def next_scene(self):
+        return MenuScene()
+
+    def update(self, inputs):
+        pass
+    
+    def render(self):
+        screen.fill((0, 0, 0))
+        scene_name = FONT.render('Option Scene', True, (255, 255, 255))
         screen.blit(scene_name, SCENE_NAME_AREA)
 class EndScene(Scene):
     def __init__(self):
