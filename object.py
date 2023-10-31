@@ -112,6 +112,9 @@ class Item(Object, pygame.sprite.Sprite):
         self.score_value = -1
         self.is_collected = False
         
+        self.animation_timer = 0
+        self.animation_duration = 3
+        
     def draw(self, screen):
         screen.blit(self.image, self.rect)
         
@@ -167,9 +170,6 @@ class Apple(Item):
         
         self.current_sprite = 0
         self.image = self.item_sprites[self.current_sprite]
-        
-        self.animation_timer = 0
-        self.animation_duration = 3
 
 class Banana(Item):
     def __init__(self, x, y):
@@ -201,7 +201,4 @@ class Banana(Item):
                     
         self.current_sprite = 0
         self.image = self.item_sprites[self.current_sprite]
-        
-        self.animation_timer = 0
-        self.animation_duration = 3
         
