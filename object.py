@@ -2,10 +2,10 @@ import pygame
 import random
 import os
 
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 640
 
-BLOCK_SIZE = 32
+BLOCK_SIZE = 40
 class Object(pygame.sprite.Sprite):
     def __init__(self, x, y, name=None):
         super().__init__()
@@ -34,13 +34,22 @@ class Object(pygame.sprite.Sprite):
 class Block(Object):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.image.fill(self.color)
+        self.image = pygame.image.load(os.path.join('Assets/Terrain', '1.png'))
         self.name = 'block'
         self.mask = pygame.mask.from_surface(self.image)
     def update(self, player):
         self.update_camera(player.velocity.x, player.move_camera)
         self.mask = pygame.mask.from_surface(self.image)
         
+class GrassBlock(Object):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.image = pygame.image.load(os.path.join('Assets/Terrain', '0.png'))
+        self.name = 'block'
+        self.mask = pygame.mask.from_surface(self.image)
+    def update(self, player):
+        self.update_camera(player.velocity.x, player.move_camera)
+        self.mask = pygame.mask.from_surface(self.image)
 
 class BreakableObject(Object, pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -131,17 +140,16 @@ class Item(Object, pygame.sprite.Sprite):
     
     def collision_with_player(self, player):
         if pygame.sprite.collide_mask(self, player):
+            item_sound = pygame.mixer.Sound(os.path.join('Assets\Sound', 'item.mp3'))
+            pygame.mixer.Sound.play(item_sound)
             self.is_collected = True
             player.score += self.score_value
             self.kill()
-            # Play particle effect
-    
-
             
 class Apple(Item):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.score_value = 10
+        self.score_value = 5
         self.name = "Apple"
         
         self.item_sprites = []
@@ -174,7 +182,7 @@ class Apple(Item):
 class Banana(Item):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.score_value = 20
+        self.score_value = 10
         self.name = "Banana"
         
         self.item_sprites = []
@@ -204,4 +212,44 @@ class Banana(Item):
         
         self.animation_timer = 0
         self.animation_duration = 3
+
+class Star(Item):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.score_value = 0
+        self.name = "Star"
         
+        self.image = pygame.image.load(os.path.join('Assets/Objects', 'star.png'))
+        self.image = pygame.transform.scale(self.image, (BLOCK_SIZE, BLOCK_SIZE))
+        self.animation_timer = 0
+        self.animation_duration = 0
+        self.current_sprite = 0
+        self.item_sprites = []
+        self.item_sprites.append(self.image)
+        
+    def collision_with_player(self, player):
+        if pygame.sprite.collide_mask(self, player):
+            item_sound = pygame.mixer.Sound(os.path.join('Assets\Sound', 'item.mp3'))
+            pygame.mixer.Sound.play(item_sound)
+            self.is_collected = True
+            player.stars += 1
+            print("Star collected")
+            self.kill()
+
+class Flag(Object, pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.score_value = 0
+        self.name = "Flag"
+        
+        self.image = pygame.image.load(os.path.join('Assets/Terrain', '13.png'))
+        self.image = pygame.transform.scale(self.image, (BLOCK_SIZE * 2, BLOCK_SIZE * 2))
+        self.animation_timer = 0
+        self.animation_duration = 0
+        self.current_sprite = 0
+        self.item_sprites = []
+        self.item_sprites.append(self.image)
+        
+    def update(self, player):
+        self.update_camera(player.velocity.x, player.move_camera)
+        self.mask = pygame.mask.from_surface(self.image)

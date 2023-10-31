@@ -39,8 +39,8 @@ class Enemy(Object, pygame.sprite.Sprite):
     FRAME_RATE_CHANGE_SPEED = 10
     FRAME_RATE_CHANGE_ANIM = 10
     ATTACK_RANGE = 400
-    WIDTH = 68
-    HEIGHT = 60
+    WIDTH = 68 * 1.25
+    HEIGHT = 60 * 1.25
     FOOT_SPACE = 4 # Space between foot and ground according to image size 
     PATROL_STATE = 0
     ATTACK_STATE = 1  
@@ -108,7 +108,7 @@ class Enemy(Object, pygame.sprite.Sprite):
 
         self.invincible_time -= 1/60
         if self.hp <= 0:
-            self.dead()
+            self.dead(player)
         # Player in attack range
         if self.state != self.DEAD_STATE and self.state != self.TAKE_DMG_STATE:
             if self.rayCast2d.collide_player(player):
@@ -163,15 +163,17 @@ class Enemy(Object, pygame.sprite.Sprite):
         self.isFacingRight = not self.isFacingRight
         self.rayCast2d.flip()
     
-    def dead(self):
+    def dead(self, player):
         # self.state = self.DEAD_STATE
         # self.frameCount = 0
         # self.frame_count_change_speed = -1
         # self.velocity.x = 0
+        player.score += 20
         self.kill()
         
     def attack(self):
-        pygame.mixer.music.load(os.path.join('Assets\Sound', 'enemy_atk.mp3'))
+        enemy_atk_sound = pygame.mixer.Sound(os.path.join('Assets\Sound', 'enemy_atk.mp3'))
+        pygame.mixer.Sound.play(enemy_atk_sound)
         self.state = self.ATTACK_STATE
         self.frameCount = 0
         self.frame_count_change_speed = 0  
@@ -192,14 +194,15 @@ class Enemy(Object, pygame.sprite.Sprite):
           
     def take_dmg(self, dmg): # Immune when being taken dmg
         if self.state != self.TAKE_DMG_STATE and self.invincible_time < 0:
-            pygame.mixer.Sound.play(pygame.mixer.Sound(os.path.join('Assets\Sound', 'bonk.mp3')))
+            enemy_hit_sound = pygame.mixer.Sound(os.path.join('Assets\Sound', 'bonk.mp3'))
+            pygame.mixer.Sound.play(enemy_hit_sound)
             self.state = self.TAKE_DMG_STATE
-            self.invincible_time = 1
+            self.invincible_time = 0.5
             self.frameCount = 0
             self.frame_count_change_speed = -1
             self.velocity.x = 0
             self.hp -= dmg 
-            print(self.hp)
+            print("Enemy hp: " + str(self.hp))
         else:
             self.patrol()        
     ############## Getters & Setters ##############

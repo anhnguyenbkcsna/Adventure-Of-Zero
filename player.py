@@ -7,10 +7,10 @@ class Player(pygame.sprite.Sprite):
     FPS = 60
     FRICTION_FORCE = 0.5
     ATTACK_RANGE = 32
-    WIDTH = 30
-    HEIGHT = 50
+    WIDTH = 30 * 1.25
+    HEIGHT = 50 * 1.25
     ENEMY_DMG = 1
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, mode):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
         self.tag = "Player"
@@ -29,8 +29,11 @@ class Player(pygame.sprite.Sprite):
         
         self.attack_cd_timer = 0
         self.attack_cd = 0.2
-
-        self.hp = 3
+        
+        if mode == "Easy":
+            self.hp = 5
+        elif mode == "Hard":
+            self.hp = 1
         self.atk = 1
         
         self.level = 0
@@ -38,6 +41,7 @@ class Player(pygame.sprite.Sprite):
         
         self.invincible = 3
         self.upgrade_time = 0
+        self.stars = 0
 
         #region Animation
         # Idle
@@ -211,27 +215,23 @@ class Player(pygame.sprite.Sprite):
         collide_objects = []
         for obj in objects:
             if pygame.sprite.collide_mask(self, obj):
-                # if obj.get_tag() != "block":
-                    # print("Verticle collide: Player + " + obj.get_tag())
+                if obj.get_tag() == "Flag":
+                    # end game
+                    self.hp = -1
+                    print(self.hp)
                 if self.invincible <= 0:
-                    if obj.get_tag() == "Enemy" or obj.get_tag() == "CannonBall":
+                    if obj.get_tag() == "Enemy":
+                        self.take_dmg(self.ENEMY_DMG)
+                    elif obj.get_tag() == "CannonBall":
+                        obj.explode()
                         self.take_dmg(self.ENEMY_DMG)
                 if dy > 0:
                     # land on the object
                     self.rect.bottom = obj.rect.top
                     self.landed()
-                elif dy < 0:
-                    # Head hit the object
-                    self.rect.top = obj.rect.bottom
-                    self.hit_head()
                     
                 collide_objects.append(obj)
         return collide_objects
-    
-    # def attack(self, breakable_objects):
-    #     for obj in breakable_objects:
-    #         if not obj.is_broken and pygame.sprite.collide_rect(self, obj):
-    #             obj.break_object()
                           
     def collect_item(self, item):
         if item and item.is_collected == False:
@@ -251,11 +251,11 @@ class Player(pygame.sprite.Sprite):
                 else:
                     if dx > 0:
                         # right hit the object
-                        self.rect.right = obj.rect.left
+                        self.rect.right = obj.rect.left - 0.1
                         self.move_camera = False
                     elif dx < 0:
                         # left hit the object
-                        self.rect.left = obj.rect.right
+                        self.rect.left = obj.rect.right + 0.1
                         self.move_camera = False
                 collide_objects.append(obj)
             else :
@@ -277,7 +277,7 @@ class Player(pygame.sprite.Sprite):
         return self.rect
 
     def take_dmg(self, dmg): # Immune when being taken dmg
-        pygame.mixer.Sound.play(pygame.mixer.Sound(os.path.join('Assets\Sound', 'be_hit.wav')))
+        pygame.mixer.Sound.play(pygame.mixer.Sound(os.path.join('Assets\Sound', 'be_hit.mp3')))
         if self.anim_state != "Hit":
             self.anim_state = "Hit"
             self.anim_count = 0    

@@ -13,8 +13,8 @@ class CannonBall(Object, pygame.sprite.Sprite):
     XTOCANNONX = -16 # sPACE BETWEEN y of cannon ball to y of cannon
     SPEED = 4
     FRAME_RATE_CHANGE_ANIM = 10
-    WIDTH = 32
-    HEIGHT = 32
+    WIDTH = 40
+    HEIGHT = 40
     FOOT_SPACE = 0 # Space between foot and ground according to image size 
     ALIVE_STATE = 0
     EXPLODE_STATE = 1  
@@ -178,7 +178,7 @@ class Cannon(Object, pygame.sprite.Sprite):
                 self.kill()
             if self.state == self.TAKE_DMG_STATE:
                 if self.hp <= 0:
-                    self.dead()
+                    self.dead(player)
                 else:
                     self.stand()   
             if self.state == self.SHOOTING_STATE:
@@ -187,8 +187,9 @@ class Cannon(Object, pygame.sprite.Sprite):
             else:
                 self.frameCount = 0
     
-    def dead(self):
+    def dead(self, player):
         self.state = self.DEAD_STATE
+        player.score += 15
         self.frameCount = 0
         
     def stand(self):
