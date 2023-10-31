@@ -4,8 +4,7 @@ import random
 from player import Player
 from enemy import Enemy
 from cannon import Cannon
-from object import Block, BreakableObject
-from item import Apple
+from object import Block, BreakableObject, Apple, Banana
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
@@ -75,8 +74,8 @@ class PlayScene(Scene):
         
         # Enemy
         self.enemyGroup = pygame.sprite.Group()
-        enemy = Enemy(BLOCK_SIZE*3, SCREEN_HEIGHT - BLOCK_SIZE - Enemy.HEIGHT + Enemy.FOOT_SPACE, BLOCK_SIZE*2, (SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE)
-        self.enemyGroup.add(enemy)
+        # enemy = Enemy(BLOCK_SIZE*3, SCREEN_HEIGHT - BLOCK_SIZE - Enemy.HEIGHT + Enemy.FOOT_SPACE, BLOCK_SIZE*2, (SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE)
+        # self.enemyGroup.add(enemy)
         
         # Cannon
         self.cannonGroup = pygame.sprite.Group()
@@ -88,58 +87,34 @@ class PlayScene(Scene):
         # generate ground
         self.blocks = []
         for i in range(SCREEN_WIDTH // (BLOCK_SIZE * 2)):
-            self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE))
-        self.blocks.append(Block(0, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
-        self.blocks.append(Block(BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
-        self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 1) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
-        self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE, BLOCK_SIZE))
+            self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE))
+        self.blocks.append(Block(0, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        self.blocks.append(Block(BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 1) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
         
         # Breakable objects
         self.generate_breakable_objects()
-        self.items = pygame.sprite.Group()
         self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE))
             
     def next_scene(self):
         return EndScene()
 
     def update(self, inputs):
-        self.player.update(inputs, self.blocks, self.breakable_objects)
-        
-        for obj in self.breakable_objects:
-            obj.update()
-            if obj.is_broken == True:
-                drop_prob = random.uniform(0, 1)
-                if drop_prob >= 0.5 and obj.dropped_item == False:
-                    item = obj.drop_item()
-                    if item:
-                        self.items.add(item)
-                obj.dropped_item = True
-            
-        
-        for item in self.items:
-            item.update()
-        
-        for item in self.items:
-            if pygame.sprite.collide_rect(self.player, item) and self.player.collecting:
-                self.player.collect_item(item)
-        
-        self.enemyGroup.update(self.player)
-        self.cannonGroup.update()
         objects = []
         objects.extend(self.blocks)
+        objects.extend(self.breakable_objects)
         objects.extend(self.enemyGroup)
         objects.extend(self.cannonGroup)
         for cannon in self.cannonGroup.sprites():
             objects.extend(cannon.cannonBallGroup)
+        for breakableObject in self.breakable_objects.sprites():
+            objects.extend(breakableObject.itemGroup)
         
         self.player.update(inputs, objects)
         
         for obj in objects:
             obj.update(self.player)
-        # self.enemyGroup.update(self.player)
-        # self.cannonGroup.update(self.player)
-        # for cannon in self.cannonGroup.sprites():
-        #     cannon.cannonBallGroup.update(self.player)
     
     def render(self):
         screen.fill((255, 255, 255))
@@ -150,12 +125,10 @@ class PlayScene(Scene):
         
         # draw objects
         for obj in self.breakable_objects:
+            obj.itemGroup.draw(screen)
             obj.draw(screen)
         
-        for item in self.items:
-            item.draw(screen)
         
-        # Draw the player 
         self.enemyGroup.draw(screen)
         self.cannonGroup.draw(screen)
         for cannon in self.cannonGroup.sprites():
@@ -169,6 +142,7 @@ class PlayScene(Scene):
         screen.blit(score_text, (SCREEN_WIDTH - 200, 50))
 
         scene_name = FONT.render('Play Scene', True, (0, 0, 0))
+        
         self.player.draw(screen)
         screen.blit(scene_name, SCENE_NAME_AREA)
         
@@ -181,7 +155,7 @@ class PlayScene(Scene):
             while not valid_position:
                 x = random.randint(BLOCK_SIZE * 2, SCREEN_WIDTH // 2 - BLOCK_SIZE * 2)
                 y = SCREEN_HEIGHT - BLOCK_SIZE * 2
-                new_object = BreakableObject(x, y, BLOCK_SIZE, BLOCK_SIZE)
+                new_object = BreakableObject(x, y)
                 valid_position = True
 
                 for position in existing_positions:

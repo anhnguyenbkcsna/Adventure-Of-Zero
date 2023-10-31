@@ -36,8 +36,7 @@ class Player(pygame.sprite.Sprite):
         
         self.level = 0
         self.score = 0
-    def update(self, keys, objects, breakable_objects):
-        self.update_input(keys, breakable_objects)
+
         #region Animation
         # Idle
         self.anim_count = 0
@@ -132,7 +131,7 @@ class Player(pygame.sprite.Sprite):
             for j in range(len(self.anim[i])):
                 self.anim[i][j] = pygame.transform.flip(self.anim[i][j], True, False)
 
-    def update_input(self, input_keys, breakable_objects):
+    def update_input(self, input_keys):
         # horizontal move
         if input_keys[pygame.K_a] or input_keys[pygame.K_LEFT]:
             if self.isFacingRight:
@@ -302,6 +301,9 @@ class Attack(pygame.sprite.Sprite):
                 print("Collision detect: Attack + " + obj.get_tag())
                 # obj.change_color((255, 0, 0)) # detect atk collision
                 collide_objects.append(obj)
+                
+                if obj.get_tag() == "Breakable Object":
+                    obj.break_object()
     
     def draw(self, screen, pos, isFacingRight):
         self.rect = pygame.Rect(pos[0] - self.ATTACK_RANGE / 2, pos[1] - self.ATTACK_RANGE / 2, self.ATTACK_RANGE, self.ATTACK_RANGE)
