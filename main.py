@@ -74,8 +74,8 @@ class PlayScene(Scene):
         
         # Enemy
         self.enemyGroup = pygame.sprite.Group()
-        # enemy = Enemy(BLOCK_SIZE*3, SCREEN_HEIGHT - BLOCK_SIZE - Enemy.HEIGHT + Enemy.FOOT_SPACE, BLOCK_SIZE*2, (SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE)
-        # self.enemyGroup.add(enemy)
+        enemy = Enemy(BLOCK_SIZE*3, SCREEN_HEIGHT - BLOCK_SIZE - Enemy.HEIGHT + Enemy.FOOT_SPACE, BLOCK_SIZE*2, (SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE)
+        self.enemyGroup.add(enemy)
         
         # Cannon
         self.cannonGroup = pygame.sprite.Group()
@@ -115,6 +115,9 @@ class PlayScene(Scene):
         
         for obj in objects:
             obj.update(self.player)
+        
+        if self.player.hp <= 0:
+            self.nextscene = self.next_scene()
     
     def render(self):
         screen.fill((255, 255, 255))
@@ -141,10 +144,24 @@ class PlayScene(Scene):
         screen.blit(level_text, (SCREEN_WIDTH - 200, 10))
         screen.blit(score_text, (SCREEN_WIDTH - 200, 50))
 
-        scene_name = FONT.render('Play Scene', True, (0, 0, 0))
         
         self.player.draw(screen)
-        screen.blit(scene_name, SCENE_NAME_AREA)
+        
+        # Upgrde character menu
+        if self.player.score >= 50:
+            button = pygame.Rect(SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT // 2 - 300, 600, 300)
+            buff_atk = pygame.Rect(SCREEN_WIDTH // 2 - 300 + 25, SCREEN_HEIGHT // 2 - 300 + 25, 250, 250)
+            buff_hp = pygame.Rect(SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT // 2 - 300 + 25, 250, 250)
+            pygame.draw.rect(screen, (150, 70, 70), button, 10)
+            pygame.draw.rect(screen, (150, 70, 70), buff_atk, 10)
+            pygame.draw.rect(screen, (150, 70, 70), buff_hp, 10)
+            if pygame.mouse.get_pressed()[0]:
+                if buff_atk.collidepoint(pygame.mouse.get_pos()):
+                    self.player.atk += 1
+                    self.player.score -= 50
+                elif buff_hp.collidepoint(pygame.mouse.get_pos()):
+                    self.player.hp += 1
+                    self.player.score -= 50
         
     def generate_breakable_objects(self):
         self.breakable_objects = pygame.sprite.Group()

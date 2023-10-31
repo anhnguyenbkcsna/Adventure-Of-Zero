@@ -91,7 +91,7 @@ class Enemy(Object, pygame.sprite.Sprite):
         self.flipPoint1 = flipPoint1
         self.flipPoint2 = flipPoint2
         
-        self.hp = 2
+        self.hp = 5
         self.mask = pygame.mask.from_surface(self.image)
 
     def update(self, player):

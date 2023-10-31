@@ -9,6 +9,7 @@ class Player(pygame.sprite.Sprite):
     ATTACK_RANGE = 32
     WIDTH = 30
     HEIGHT = 50
+    ENEMY_DMG = 1
     def __init__(self, x, y, width, height):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
@@ -18,7 +19,6 @@ class Player(pygame.sprite.Sprite):
 
         self.isFacingRight = True
         self.isJump = True
-        self.mask = None
         self.collecting = False
         
         self.move_camera = True
@@ -29,13 +29,14 @@ class Player(pygame.sprite.Sprite):
         
         self.attack_cd_timer = 0
         self.attack_cd = 0.2
-        
-        # self.dash_cd = 0
-        # self.pull_cd = 0
-        # self.push_cd = 0
+
+        self.hp = 3
+        self.atk = 1
         
         self.level = 0
         self.score = 0
+        
+        self.invincible = 3
 
         #region Animation
         # Idle
@@ -88,12 +89,15 @@ class Player(pygame.sprite.Sprite):
         self.anim.append(self.hit)
         self.anim.append(self.jump)
         
+        self.hp_image = pygame.transform.scale(pygame.image.load(os.path.join('Assets\Player', 'hp.png')), (50, 50))
+        
         #endregion
         for i in range(len(self.anim)):
             for j in range(len(self.anim[i])):
                 self.anim[i][j] = pygame.transform.scale(self.anim[i][j], (width, height))
 
         self.image = self.idle[0]
+        self.mask = pygame.mask.from_surface(self.image)
 
         self.attack = Attack()
     def update(self, keys, objects):
@@ -112,6 +116,7 @@ class Player(pygame.sprite.Sprite):
         
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+        self.draw_hp_bar(screen)
         if self.attack_cd_timer > 0:
             pos = self.rect
             if self.isFacingRight:
@@ -120,6 +125,11 @@ class Player(pygame.sprite.Sprite):
                 pos = (self.rect.x - self.rect.width / 3, self.rect.y + self.rect.height / 2)
             # draw attack range
             self.attack.draw(screen, pos, self.isFacingRight)
+    
+    def draw_hp_bar(self, screen):
+        for i in range(self.hp):
+            screen.blit(self.hp_image, (i * self.hp_image.get_width(), 0))
+    
     def move(self):
         # self.rect.x += self.velocity.x
         self.rect.y += self.velocity.y
@@ -169,7 +179,7 @@ class Player(pygame.sprite.Sprite):
                 self.dash_cd_timer = self.dash_cd
         # pull_skill
         elif input_keys[pygame.K_e]:
-            pass
+            self.score += 10
         
         elif input_keys[pygame.K_c]:
             self.collecting = True
@@ -179,6 +189,7 @@ class Player(pygame.sprite.Sprite):
     def update_cd_timer(self):
         self.dash_cd_timer -= 1 / self.FPS
         self.attack_cd_timer -= 1/self.FPS
+        self.invincible -= 1 / self.FPS
     
     #region Physics & Collision 
     def update_gravity(self):
@@ -200,8 +211,10 @@ class Player(pygame.sprite.Sprite):
         for obj in objects:
             if pygame.sprite.collide_mask(self, obj):
                 if obj.get_tag() != "block":
-                    print("Collision detect: Player + " + obj.get_tag())
-                
+                    print("Verticle collide: Player + " + obj.get_tag())
+                if self.invincible <= 0:
+                    if obj.get_tag() == "Enemy" or obj.get_tag() == "CannonBall":
+                        self.take_dmg(self.ENEMY_DMG)
                 if dy > 0:
                     # land on the object
                     self.rect.bottom = obj.rect.top
@@ -226,26 +239,29 @@ class Player(pygame.sprite.Sprite):
             if self.score % 20 == 0:
                 self.level += 1
             item.is_collected = True
-    ############## Getters & Setters ##############
     def horizontal_collision(self, objects, dx):
         collide_objects = []
         for obj in objects:
             if pygame.sprite.collide_mask(self, obj):
-                print("Collision detect: Player + " + obj.get_tag())
-                if dx > 0:
-                    # right hit the object
-                    self.rect.right = obj.rect.left
-                    self.move_camera = False
-                elif dx < 0:
-                    # left hit the object
-                    self.rect.left = obj.rect.right
-                    self.move_camera = False
+                print("Horizontal collide: Player + " + obj.get_tag())
+                if self.invincible <= 0:
+                    if obj.get_tag() == "Enemy" or obj.get_tag() == "CannonBall":
+                        self.take_dmg(self.ENEMY_DMG)
+                else:
+                    if dx > 0:
+                        # right hit the object
+                        self.rect.right = obj.rect.left
+                        self.move_camera = False
+                    elif dx < 0:
+                        # left hit the object
+                        self.rect.left = obj.rect.right
+                        self.move_camera = False
                 collide_objects.append(obj)
             else :
                 self.move_camera = True
         return collide_objects
     #endregion
-    
+    ############## Getters & Setters ##############
     #region Set & Get
     def set_hp(self, hp):
         self.hp = hp     
@@ -258,11 +274,20 @@ class Player(pygame.sprite.Sprite):
     
     def get_pos(self):
         return self.rect
+
+    def take_dmg(self, dmg): # Immune when being taken dmg
+        if self.anim_state != "Hit":
+            self.anim_state = "Hit"
+            self.anim_count = 0    
+            self.hp -= dmg
+            self.invincible = 3
     #endregion
 # Ref https://github.com/techwithtim/Python-Platformer/
 
     #region Animation
     def update_animation(self):
+        if self.invincible > 0:
+            self.anim_state = "Hit"
         if self.velocity.y > 0.1:
             self.anim_state = "Jump"
         elif self.velocity.x != 0:
@@ -270,12 +295,14 @@ class Player(pygame.sprite.Sprite):
         else:
             self.anim_state = "Idle"
         
+        # any state
+        if self.anim_state == "Hit":
+            self.image = self.hit[int(self.anim_count % 2)]
+        # init state
         if self.anim_state == "Idle":
             self.image = self.idle[int(self.anim_count % 11)]
         elif self.anim_state == "Run":
             self.image = self.run[int(self.anim_count % 12)]
-        elif self.anim_state == "Hit":
-            self.image = self.hit[int(self.anim_count % 2)]
         elif self.anim_state == "Jump":
             self.image = self.jump[0]
         elif self.anim_state == "Fall":

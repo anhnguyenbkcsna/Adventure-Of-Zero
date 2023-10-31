@@ -56,7 +56,8 @@ class CannonBall(Object, pygame.sprite.Sprite):
         # Player die if touch ball (thay kill bang ham chuyen trang thai player die)
         if self.collide_player(player):
             self.kill()
-            player.kill()
+            if player.invincible <= 0:
+                player.take_dmg(1)
         
         # Move cannon ball a distance == Cannon.SHOOTING_RANGE
         if self.state == self.ALIVE_STATE:
