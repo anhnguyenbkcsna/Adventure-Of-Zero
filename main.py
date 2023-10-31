@@ -46,18 +46,41 @@ class MenuScene(Scene):
         pass
     
     def render(self):
-        screen.fill((0, 0, 0))
-        play_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 100, 200, 100)
-        option_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100, 200, 100)
-        pygame.draw.rect(screen, (255, 255, 255), play_button)
-        pygame.draw.rect(screen, (255, 255, 255), option_button)
-        # screen.blit(play_button, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 100))
+        background = (pygame.image.load(os.path.join('Assets\Background', 'background.png')))
+        background = pygame.transform.scale(background, (1280, 720))
+        screen.blit(background, (SCREEN_WIDTH // 2 - 640, SCREEN_HEIGHT // 2 - 360))
+        
+        start_btn = (pygame.image.load(os.path.join('Assets\Button', 'startbutton.png')))
+        start_btn = pygame.transform.scale(start_btn, (215, 100))
+        
+        setting_btn = (pygame.image.load(os.path.join('Assets\Button', 'setbutton.png')))
+        setting_btn = pygame.transform.scale(setting_btn, (215, 100))
+        
+        about_btn = (pygame.image.load(os.path.join('Assets\Button', 'Aboutbutton.png')))
+        about_btn = pygame.transform.scale(about_btn, (215, 100))
+        
+        quit_btn = (pygame.image.load(os.path.join('Assets\Button', 'quitbutton.png')))
+        quit_btn = pygame.transform.scale(quit_btn, (215, 100))
+
+        play_button = pygame.Rect(SCREEN_WIDTH // 2 - 108, SCREEN_HEIGHT // 2 - 250, 215, 100)
+        option_button = pygame.Rect(SCREEN_WIDTH // 2 - 108, SCREEN_HEIGHT // 2 - 125, 215, 100)
+        about_button = pygame.Rect(SCREEN_WIDTH // 2 - 108, SCREEN_HEIGHT // 2 + 0, 215, 100)
+        quit_button = pygame.Rect(SCREEN_WIDTH // 2 - 108, SCREEN_HEIGHT // 2 + 125, 215, 100)
+        
+        screen.blit(start_btn, (SCREEN_WIDTH // 2 - 108, SCREEN_HEIGHT // 2 - 250))
+        screen.blit(setting_btn, (SCREEN_WIDTH // 2 - 108, SCREEN_HEIGHT // 2 - 125))
+        screen.blit(about_btn, (SCREEN_WIDTH // 2 - 108, SCREEN_HEIGHT // 2 + 0))
+        screen.blit(quit_btn, (SCREEN_WIDTH // 2 - 108, SCREEN_HEIGHT // 2 + 125))
         
         if pygame.mouse.get_pressed()[0]:
             if play_button.collidepoint(pygame.mouse.get_pos()):
                 self.nextscene = self.next_scene()
             elif option_button.collidepoint(pygame.mouse.get_pos()):
                 self.nextscene = OptionScene()
+            elif about_button.collidepoint(pygame.mouse.get_pos()):
+                self.nextscene = AboutScene()
+            elif quit_button.collidepoint(pygame.mouse.get_pos()):
+                return
 class OptionScene(Scene):
     def __init__(self):
         super().__init__()
@@ -69,9 +92,33 @@ class OptionScene(Scene):
         pass
     
     def render(self):
-        screen.fill((0, 0, 0))
+        background = (pygame.image.load(os.path.join('Assets\Background', 'background.png')))
+        background = pygame.transform.scale(background, (1280, 720))
+        screen.blit(background, (SCREEN_WIDTH // 2 - 640, SCREEN_HEIGHT // 2 - 360))
+        
+
         scene_name = FONT.render('Option Scene', True, (255, 255, 255))
         screen.blit(scene_name, SCENE_NAME_AREA)
+        
+class AboutScene(Scene):
+    def __init__(self):
+        super().__init__()
+    
+    def next_scene(self):
+        return MenuScene()
+
+    def update(self, inputs):
+        pass
+    
+    def render(self):
+        background = (pygame.image.load(os.path.join('Assets\Background', 'background.png')))
+        background = pygame.transform.scale(background, (1280, 720))
+        screen.blit(background, (SCREEN_WIDTH // 2 - 640, SCREEN_HEIGHT // 2 - 360))
+        
+
+        scene_name = FONT.render('About Scene', True, (255, 255, 255))
+        screen.blit(scene_name, SCENE_NAME_AREA)
+        
 class EndScene(Scene):
     def __init__(self):
         super().__init__()
@@ -83,9 +130,34 @@ class EndScene(Scene):
         pass
     
     def render(self):
-        screen.fill((0, 0, 0))
-        scene_name = FONT.render('End Scene', True, (255, 255, 255))
-        screen.blit(scene_name, SCENE_NAME_AREA)
+        background = (pygame.image.load(os.path.join('Assets\Background', 'background.png')))
+        background = pygame.transform.scale(background, (1280, 720))
+        screen.blit(background, (SCREEN_WIDTH // 2 - 640, SCREEN_HEIGHT // 2 - 360))
+        
+        Sum = (pygame.image.load(os.path.join('Assets\Background', 'Sum.png')))
+        Sum = pygame.transform.scale(Sum, (450,400))
+        screen.blit(Sum, (SCREEN_WIDTH // 2 - 225, SCREEN_HEIGHT // 2 - 250))
+        
+        scene_name = FONT.render('Score', True, (255, 255, 255))
+        screen.blit(scene_name, (600,300))
+        
+        restart_btn = (pygame.image.load(os.path.join('Assets\Button', 'restartbutton.png')))
+        restart_btn = pygame.transform.scale(restart_btn, (160, 75))
+        quit_btn = (pygame.image.load(os.path.join('Assets\Button', 'quitbutton.png')))
+        quit_btn = pygame.transform.scale(quit_btn, (160, 75))
+        
+        replay_button = pygame.Rect(SCREEN_WIDTH // 2 - 190, SCREEN_HEIGHT // 2 +170, 160, 75)
+        quit_button = pygame.Rect(SCREEN_WIDTH // 2 + 30, SCREEN_HEIGHT // 2 + 170, 160, 75)
+        
+        screen.blit(restart_btn, (SCREEN_WIDTH // 2 - 190, SCREEN_HEIGHT // 2 + 170))
+        screen.blit(quit_btn, (SCREEN_WIDTH // 2 + 30, SCREEN_HEIGHT // 2 + 170))
+        if pygame.mouse.get_pressed()[0]:
+            if replay_button.collidepoint(pygame.mouse.get_pos()):
+                self.nextscene = PlayScene()
+            elif quit_button.collidepoint(pygame.mouse.get_pos()):
+                self.nextscene = MenuScene()
+        
+        
 
 ############ PLAY SCENE ############
 
