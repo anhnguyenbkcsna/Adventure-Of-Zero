@@ -1,7 +1,10 @@
 import pygame
 import os
+import random
 from player import Player
-from object import Block
+from enemy import Enemy
+from cannon import Cannon
+from object import Block, BreakableObject, Apple, Banana
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
@@ -11,6 +14,7 @@ pygame.init()
 SCENE_NAME_AREA = (0, 0)
 BLOCK_SIZE = 32
 FONT = pygame.font.Font('freesansbold.ttf', 32)
+SCORE_TEXT_STYLE = pygame.font.Font('freesansbold.ttf', 20)
 FPS = 60
 
 pygame.display.set_caption('Adventure Of Zero')
@@ -66,29 +70,103 @@ class EndScene(Scene):
 class PlayScene(Scene):
     def __init__(self):
         super().__init__()
-        self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 30, 50)
+        self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 50, 50)
+        
+        # Enemy
+        self.enemyGroup = pygame.sprite.Group()
+        # enemy = Enemy(BLOCK_SIZE*3, SCREEN_HEIGHT - BLOCK_SIZE - Enemy.HEIGHT + Enemy.FOOT_SPACE, BLOCK_SIZE*2, (SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE)
+        # self.enemyGroup.add(enemy)
+        
+        # Cannon
+        self.cannonGroup = pygame.sprite.Group()
+        cannon = Cannon(0, SCREEN_HEIGHT - 2 * BLOCK_SIZE - Cannon.HEIGHT + Cannon.FOOT_SPACE, True)
+        self.cannonGroup.add(cannon)
+        cannon = Cannon((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2 * BLOCK_SIZE - Cannon.HEIGHT + Cannon.FOOT_SPACE, False)
+        self.cannonGroup.add(cannon)
         
         # generate ground
         self.blocks = []
         for i in range(SCREEN_WIDTH // (BLOCK_SIZE * 2)):
-            self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE))
+            self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE))
+        self.blocks.append(Block(0, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        self.blocks.append(Block(BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 1) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        self.blocks.append(Block((SCREEN_WIDTH // (BLOCK_SIZE * 2) - 2) * BLOCK_SIZE, SCREEN_HEIGHT - 2*BLOCK_SIZE))
+        
+        # Breakable objects
+        self.generate_breakable_objects()
+        self.blocks.append(Block(i * BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE))
             
     def next_scene(self):
         return EndScene()
 
     def update(self, inputs):
-        self.player.update(inputs, self.blocks)
+        objects = []
+        objects.extend(self.blocks)
+        objects.extend(self.breakable_objects)
+        objects.extend(self.enemyGroup)
+        objects.extend(self.cannonGroup)
+        for cannon in self.cannonGroup.sprites():
+            objects.extend(cannon.cannonBallGroup)
+        for breakableObject in self.breakable_objects.sprites():
+            objects.extend(breakableObject.itemGroup)
+        
+        self.player.update(inputs, objects)
+        
+        for obj in objects:
+            obj.update(self.player)
     
     def render(self):
         screen.fill((255, 255, 255))
+        
         # Draw the blocks
         for block in self.blocks:
             block.draw(screen)
-        # Draw the player
-        self.player.draw(screen)
+        
+        # draw objects
+        for obj in self.breakable_objects:
+            obj.itemGroup.draw(screen)
+            obj.draw(screen)
+        
+        
+        self.enemyGroup.draw(screen)
+        self.cannonGroup.draw(screen)
+        for cannon in self.cannonGroup.sprites():
+            cannon.cannonBallGroup.draw(screen)
+            
+        # Display the current level and score
+        level_text = FONT.render(f'Level: {self.player.level}', True, (0, 0, 0))
+        score_text = FONT.render(f'Score: {self.player.score}', True, (0, 0, 0))
+    
+        screen.blit(level_text, (SCREEN_WIDTH - 200, 10))
+        screen.blit(score_text, (SCREEN_WIDTH - 200, 50))
 
         scene_name = FONT.render('Play Scene', True, (0, 0, 0))
+        
+        self.player.draw(screen)
         screen.blit(scene_name, SCENE_NAME_AREA)
+        
+    def generate_breakable_objects(self):
+        self.breakable_objects = pygame.sprite.Group()
+        existing_positions = []
+
+        for i in range(5):
+            valid_position = False
+            while not valid_position:
+                x = random.randint(BLOCK_SIZE * 2, SCREEN_WIDTH // 2 - BLOCK_SIZE * 2)
+                y = SCREEN_HEIGHT - BLOCK_SIZE * 2
+                new_object = BreakableObject(x, y)
+                valid_position = True
+
+                for position in existing_positions:
+                    if abs(x - position[0]) <= 20:
+                        valid_position = False
+                        break
+
+                if valid_position:
+                    self.breakable_objects.add(new_object)
+                    existing_positions.append((x, y))
+        
     
 class Game():
     def __init__(self):
