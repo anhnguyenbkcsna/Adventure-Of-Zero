@@ -248,6 +248,8 @@ class Player(pygame.sprite.Sprite):
                 if obj.get_tag() == "Enemy" or obj.get_tag() == "CannonBall":
                     if self.invincible <= 0:
                         self.take_dmg(self.ENEMY_DMG)
+                elif obj.get_tag() == "Obstacle":
+                    obj.rect.x += dx
                 else:
                     if dx > 0:
                         # right hit the object

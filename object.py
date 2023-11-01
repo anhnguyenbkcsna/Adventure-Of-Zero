@@ -51,6 +51,20 @@ class GrassBlock(Object):
         self.update_camera(player.velocity.x, player.move_camera)
         self.mask = pygame.mask.from_surface(self.image)
 
+class Obstacle(Object, pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.rect = pygame.Rect(x, y, BLOCK_SIZE, BLOCK_SIZE)
+        self.name = "Obstacle"
+        self.image = pygame.image.load(os.path.join('Assets/Terrain', '17.png'))
+        
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
+            
+    def update(self, player):
+        self.update_camera(player.velocity.x, player.move_camera)
+        self.mask = pygame.mask.from_surface(self.image)
+
 class BreakableObject(Object, pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(x, y)

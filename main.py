@@ -5,7 +5,7 @@ import random
 from player import Player
 from enemy import Enemy
 from cannon import Cannon
-from object import Block, GrassBlock, BreakableObject, Apple, Banana, Star, Flag
+from object import Block, GrassBlock, BreakableObject, Apple, Banana, Star, Flag, Obstacle
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 640
@@ -242,6 +242,10 @@ class PlayScene(Scene):
                     elif tile == 15:
                         flag = Flag(x * BLOCK_SIZE, y * BLOCK_SIZE)
                         self.end.add(flag)
+                    elif tile == 16:
+                        obstacle = Obstacle(x * BLOCK_SIZE, y * BLOCK_SIZE)
+                        self.blocks.add(obstacle)
+                    
             
     def next_scene(self):
         return EndScene(self.player.score, self.player.stars)
